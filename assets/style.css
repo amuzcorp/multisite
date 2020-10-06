@@ -1,0 +1,9 @@
+.icon-wrap{
+  display:inline-block;
+  width:24px; height:24px;
+  background-size:cover;
+  background-position:center;
+  vertical-align:-7px;
+  border-radius:3px;
+  margin-right:5px;
+}
