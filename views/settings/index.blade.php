@@ -29,6 +29,14 @@
                 <div class="panel-group">
                     <div class="panel">
                         <div class="panel-heading">
+                            <div class="pull-right">
+                                <div class="search-btn-group">
+                                    <a href="{{ route('settings.multisite.create') }}" class="xe-btn xe-btn-install">
+                                        <i class="xi-plus"></i>{{ xe_trans('xe::site') }} {{ xe_trans('xe::create') }}
+                                    </a>
+{{--                                    <button class="xe-btn">업데이트 목록</button>--}}
+                                </div>
+                            </div>
                             <div class="pull-left">
                                 <div class="btn-group">
                                     <button class="btn btn-default __xe_check_all">{{ xe_trans('xe::selectAll') }}</button>
@@ -40,7 +48,7 @@
                             <div class="pull-right text-align--right">
                                 <div class="input-group search-group">
                                     <div class="search-input-group">
-                                        <input type="text" class="form-control" placeholder="{{xe_trans('xe::enterKeyword')}}" name="query" value="{{ \Request::get('query') }}">
+                                        <input type="text" class="form-control" placeholder="{{xe_trans('xe::enterKeyword')}}" name="query" value="{{ $keyword }}">
                                         <button class="btn-link">
                                             <span class="sr-only">{{xe_trans('xe::search')}}</span>
                                         </button>
@@ -62,8 +70,8 @@
 
                                     <div class="left-group">
                                         <span class="plugin-title">
-                                            <span class="icon-wrap" style="background-image:url('{{ $Site->config->get('favicon.path') }}');"></span>
-                                            {{ xe_trans($Site->seo->get('mainTitle')) }}
+                                            <span class="icon-wrap" style="background-image:url('{{ $Site->config->get('favicon.path') ? $Site->config->get('favicon.path') : '/assets/core/settings/img/logo.png' }}');"></span>
+                                            {{ xe_trans($Site->config->get('site_title')) }}
                                         </span>
                                         <dl>
                                             <dt class="sr-only">Front Link</dt>
@@ -74,12 +82,12 @@
                                             <dt class="sr-only">Domain</dt>
                                             <dd>대표 도메인 {{ $Site->FeaturedDomain->first()->domain }} (외 {{ $Site->Domains->count() - 1 }} 연결)</dd>
                                         </dl>
-                                        <p class="ellipsis">{{ xe_trans($Site->seo->get('description')) }}</p>
+                                        <p class="ellipsis"></p>
                                     </div>
 
                                     <div class="btn-right form-inline">
                                         <a href="{!! $Site->getDomainLink(false,"settings/setting") !!}" target="_blank" class="xe-btn xe-btn-positive-outline" data-site-key="{{ $Site->site_key }}">{{ xe_trans('xe::defaultSettings') }} {{ xe_trans('xe::modify') }}</a>
-                                        <a href="" class="xe-btn xe-btn-positive" data-site-key="{{ $Site->site_key }}">{{ xe_trans('xe::domain') }} {{ xe_trans('xe::settings') }}</a>
+                                        <a href="" class="xe-btn xe-btn-positive" data-site-key="{{ $Site->site_key }}">{{ xe_trans('xe::settings') }}</a>
                                     </div>
                                 </li>
                             @endforeach

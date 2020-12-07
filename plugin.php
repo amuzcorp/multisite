@@ -44,6 +44,10 @@ class Plugin extends AbstractPlugin
      */
     private function registerSitesPermissions(){
         $permissions = [
+            'sites' => [
+                'title' => xe_trans('multisite::multisite'),
+                'tab' => xe_trans('multisite::multisite')
+            ],
             'sites.list' => [
                 'title' => xe_trans('multisite::accessSiteList'),
                 'tab' => xe_trans('multisite::multisite')
@@ -75,6 +79,12 @@ class Plugin extends AbstractPlugin
             'title' => '사이트 목록',
             'description' => '생성된 사이트목록을 열람합니다.',
             'display' => true,
+            'ordering' => 100
+        ]);
+        \XeRegister::push('settings/menu', 'sites.create', [
+            'title' => '새 사이트 추가',
+            'description' => '사이트를 추가하고 편집합니다.',
+            'display' => true,
             'ordering' => 200
         ]);
     }
@@ -86,12 +96,22 @@ class Plugin extends AbstractPlugin
      */
     protected function registerSettingsRoute()
     {
-        Route::settings(static::getId(), function() {
-            Route::get('/', [
-                'as' => 'settings.multisite.index',
-                'uses' => 'MultisiteSettingsController@index',
-                'settings_menu' => 'sites.index'
-            ]);
+      Route::settings(static::getId(), function() {
+        Route::get('/', [
+            'as' => 'settings.multisite.index',
+            'uses' => 'MultisiteSettingsController@index',
+            'settings_menu' => 'sites.index'
+        ]);
+        Route::get('/create', [
+          'as' => 'settings.multisite.create',
+          'uses' => 'MultisiteSettingsController@create',
+          'settings_menu' => 'sites.create'
+        ]);
+
+        Route::post('/store', [
+          'as' => 'settings.multisite.store',
+          'uses' => 'MultisiteSettingsController@store',
+        ]);
       },['namespace' => 'Amuz\XePlugin\Multisite\Controllers']);
     }
 

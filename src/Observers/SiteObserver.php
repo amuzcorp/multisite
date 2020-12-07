@@ -7,7 +7,7 @@ class SiteObserver
 {
     public function retrieved(Site $Site)
     {
-        $Site->seo = app('xe.config')->get('seo',false,$Site->site_key);
+        $Site->seo = app('xe.config')->get('seo',true,$Site->site_key);
         $Site->config = app('xe.site')->getSiteConfig($Site->site_key);
     }
 

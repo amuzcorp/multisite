@@ -29,7 +29,7 @@ class SitesMigration
 
                 $table->char('is_featured', 1)->default('N');
                 $table->char('is_redirect_to_featured', 1)->default('Y');
-                $table->char('is_ssl', 1);
+                $table->char('is_ssl', 1)->default('N');
 
                 $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
                 $table->timestamp('updated_at')->default(DB::raw('CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP'));

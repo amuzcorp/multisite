@@ -3,7 +3,7 @@
 namespace Amuz\XePlugin\Multisite\Models;
 use Xpressengine\Database\Eloquent\DynamicModel;
 
-class SiteDomain extends DynamicModel
+class SiteConfig extends DynamicModel
 {
     protected $guarded = [];
     /**
@@ -11,14 +11,14 @@ class SiteDomain extends DynamicModel
      *
      * @var string
      */
-    protected $table = 'site_domains';
+    protected $table = 'config';
 
     /**
      * The primary key associated with the table.
      *
      * @var string
      */
-    protected $primaryKey = 'domain';
+    protected $primaryKey = ['site_key','name'];
 
     /**
      * Indicates if the IDs are auto-incrementing.
@@ -39,12 +39,7 @@ class SiteDomain extends DynamicModel
      *
      * @var bool
      */
-    public $timestamps = true;
-
-    public function get($key){
-        if(!isset($this->attributes[$key])) return false;
-        return $this->attributes[$key];
-    }
+    public $timestamps = false;
 
     public function Site(){
         return $this->belongsTo('Amuz\XePlugin\Multisite\Models\Site','site_key');

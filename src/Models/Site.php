@@ -34,6 +34,15 @@ class Site extends XeSite
         return $this->hasMany('Amuz\XePlugin\Multisite\Models\SiteDomain','site_key')->orderBy('is_featured','DESC')->orderBy('is_ssl','DESC')->orderBy('is_redirect_to_featured','DESC');
     }
 
+    public function Configs()
+    {
+        return $this->hasMany('Amuz\XePlugin\Multisite\Models\SiteConfig','site_key');
+    }
+
+    public function configSEO(){
+        return $this->hasMany('Amuz\XePlugin\Multisite\Models\SiteConfig','site_key')->where('name','seo');
+    }
+
     public function FeaturedDomain()
     {
         return $this->Domains()->where('is_featured','=','Y');
