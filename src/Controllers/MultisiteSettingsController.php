@@ -130,7 +130,7 @@ class MultisiteSettingsController extends BaseController
                 ['site_key' => $site_key, 'name' => 'comment', 'vars' => '[]'],
                 ['site_key' => $site_key, 'name' => 'comment_map', 'vars' => '[]'],
 
-                ['site_key' => $site_key, 'name' => 'module/board@board', 'vars' => '[]'],
+                ['site_key' => $site_key, 'name' => 'module/board@board', 'vars' => '{"skinId":"","perPage":10,"pageCount":10,"newTime":1,"comment":true,"assent":true,"dissent":false,"category":false,"anonymity":false,"anonymityName":"Anonymity","managerEmail":"","division":false,"revision":true,"dynamicFieldList":[],"recursiveDelete":true,"orderType":"","useCaptcha":false,"useTag":true,"urlType":"slug","deleteToTrash":false,"newCommentNotice":false,"secretPost":true,"useApprove":false,"listColumns":["favorite","title","writer","assent_count","read_count","created_at"],"sortListColumns":["favorite","title","writer","assent_count","read_count","created_at","updated_at","dissent_count"],"formColumns":["title","content"],"sortFormColumns":["title","content"]}'],
                 ['site_key' => $site_key, 'name' => 'skins', 'vars' => '[]'],
                 ['site_key' => $site_key, 'name' => 'skins.selected', 'vars' => '[]'],
                 ['site_key' => $site_key, 'name' => 'skins.configs', 'vars' => '[]'],
