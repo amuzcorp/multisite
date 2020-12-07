@@ -141,9 +141,9 @@ class MultisiteSettingsController extends BaseController
 
         $menuTitle = XeLang::genUserKey();
         foreach (XeLang::getLocales() as $locale) {
-            $value = "홈";
+            $value = "멀티사이트의 첫화면";
             if ($locale != 'ko') {
-                $value = "Home";
+                $value = "Homepage of Multisite";
             }
             XeLang::save($menuTitle, $locale, $value, false);
         }
@@ -212,7 +212,7 @@ class MultisiteSettingsController extends BaseController
         $boardMenuTypeInput = [
             'page_title' => 'XpressEngine3 Board',
             'board_name' => 'Board',
-            'site_key' => 'default',
+            'site_key' => $site_key,
             'revision' => 'true',
             'division' => 'false',
         ];
