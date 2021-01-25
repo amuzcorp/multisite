@@ -9,6 +9,10 @@ return [
         'ko' => '새로운 사이트를 추가합니다.',
         'en' => 'Add New Site'
     ],
+    'siteUpdate' => [
+        'ko' => '사이트 %s를 수정합니다.',
+        'en' => 'Update Site for %s'
+    ],
     'accessSiteList' => [
         'ko' => '사이트 목록 접근',
         'en' => 'Access Site List'
@@ -37,8 +41,16 @@ return [
         'ko' => '이미 존재하는 호스트입니다.',
         'en' => 'This host is exists.'
     ],
+    'siteHostNoneExists' => [
+        'ko' => '존재하지 않는 사이트 입니다.',
+        'en' => 'This host is exists.'
+    ],
     'createdNewSite' => [
         'ko' => '새로운 사이트가 추가되었습니다.',
         'en' => 'Success created of new site.'
+    ],
+    'deletedNewSite' => [
+        'ko' => '사이트가 삭제되었습니다.',
+        'en' => 'Success delete of site.'
     ],
 ];

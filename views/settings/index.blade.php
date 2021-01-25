@@ -87,7 +87,7 @@
 
                                     <div class="btn-right form-inline">
                                         <a href="{!! $Site->getDomainLink(false,"settings/setting") !!}" target="_blank" class="xe-btn xe-btn-positive-outline" data-site-key="{{ $Site->site_key }}">{{ xe_trans('xe::defaultSettings') }} {{ xe_trans('xe::modify') }}</a>
-                                        <a href="" class="xe-btn xe-btn-positive" data-site-key="{{ $Site->site_key }}">{{ xe_trans('xe::settings') }}</a>
+                                        <a href="{{ route('settings.multisite.edit',['site_key' => $Site->site_key]) }}" class="xe-btn xe-btn-positive" data-site-key="{{ $Site->site_key }}">{{ xe_trans('xe::settings') }}</a>
                                     </div>
                                 </li>
                             @endforeach

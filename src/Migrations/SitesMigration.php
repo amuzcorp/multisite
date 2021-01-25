@@ -36,33 +36,34 @@ class SitesMigration
 
                 $table->primary('domain');
             });
+
+            /**
+             * 도메인 관련정보를 통합적으로 처리
+             **/
+            $defaultSite = Site::find('default');
+
+            //add Default Site Domains
+            $featured_domain = $defaultSite->host;
+
+            //set www
+            if(substr($featured_domain, 0, 4) !== 'www.') {
+                $alias_domain = 'www.' . $featured_domain;
+            }else{
+                $alias_domain = substr($featured_domain, 4);
+            }
+
+            //도메인 생성
+            $defaultSite->Domains()->saveMany([
+                new SiteDomain([
+                    'domain' => $featured_domain, 'is_ssl' => "N",  'is_featured' => "Y"
+                ]),
+                new SiteDomain([
+                    'domain' => $alias_domain, 'is_ssl' => "N"
+                ]),
+            ]);
+
+            $defaultSite->save();
         }
-        /**
-         * 도메인 관련정보를 통합적으로 처리
-         **/
-        $defaultSite = Site::find('default');
-
-        //add Default Site Domains
-        $featured_domain = $defaultSite->host;
-
-        //set www
-        if(substr($featured_domain, 0, 4) !== 'www.') {
-            $alias_domain = 'www.' . $featured_domain;
-        }else{
-            $alias_domain = substr($featured_domain, 4);
-        }
-
-        //도메인 생성
-        $defaultSite->Domains()->saveMany([
-            new SiteDomain([
-                'domain' => $featured_domain, 'is_ssl' => "N",  'is_featured' => "Y"
-            ]),
-            new SiteDomain([
-                'domain' => $alias_domain, 'is_ssl' => "N"
-            ]),
-        ]);
-
-        $defaultSite->save();
     }
 
     /**

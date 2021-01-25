@@ -1,6 +1,7 @@
 <?php
 namespace Amuz\XePlugin\Multisite\Controllers;
 
+use Illuminate\Filesystem\Filesystem;
 use XeFrontend;
 use XePresenter;
 use XeLang;
@@ -21,6 +22,7 @@ use Xpressengine\Permission\Grant;
 use Xpressengine\Plugins\Board\Components\Skins\Board\Blog\BlogSkin;
 use Xpressengine\Plugins\Board\Components\Skins\Board\Gallery\GallerySkin;
 use Xpressengine\Skin\SkinHandler;
+use Xpressengine\Support\Migration;
 use Xpressengine\Theme\ThemeHandler;
 
 class MultisiteSettingsController extends BaseController
@@ -41,6 +43,8 @@ class MultisiteSettingsController extends BaseController
 //        XePresenter::setSettingsSkinTargetId('multisite');
         $this->app = $app;
         XeFrontend::css('plugins/multisite/assets/style.css')->load();
+
+        XeFrontend::js('plugins/multisite/assets/amuz_common.js')->load();
     }
 
     public function index(Request $request)
@@ -64,6 +68,20 @@ class MultisiteSettingsController extends BaseController
         ]);
     }
 
+    public function edit($site_key, $mode = null){
+        $title = xe_trans('multisite::multisite');
+
+        $Site = Site::find($site_key);
+        if($Site == null){
+            return redirect()->route('settings.multisite.index')->with('alert', [
+                    'type' => 'failed', 'message' => xe_trans('multisite::siteHostNoneExists')]
+            );
+        }
+
+        $defaultSite = Site::find('default');
+        return XePresenter::make('multisite::views.settings.edit', compact('title','site_key', 'mode', 'Site','defaultSite'));
+    }
+
     public function create(){
         $Site = new Site();
         $title = xe_trans('multisite::multisite');
@@ -75,7 +93,7 @@ class MultisiteSettingsController extends BaseController
 
     public function store(Request $request){
         $defaultSite = Site::find('default');
-        $site_key = strtolower($request->get('site_key'));
+        $site_key = strtolower($request->get('host'));
         //존재하는 사이트인지 확인
         $Site = Site::find($site_key);
         if($Site != null){
@@ -118,59 +136,33 @@ class MultisiteSettingsController extends BaseController
             //parent configs 설정
             \DB::table('config')->insert([
                 ['site_key' => 'default', 'name' => 'site.' . $site_key , 'vars' => '[]'],
-
-                ['site_key' => $site_key, 'name' => 'menu', 'vars' => '[]'],
-                ['site_key' => $site_key, 'name' => 'site', 'vars' => '[]'],
-                ['site_key' => $site_key, 'name' => 'plugin', 'vars' => '{"list":{"board":{"status":"activated","version":"1.0.14"},"together":{"status":"activated","version":"1.0.5"},"claim":{"status":"activated","version":"1.0.3"},"ckeditor":{"status":"activated","version":"1.0.9"},"comment":{"status":"activated","version":"1.0.5"},"page":{"status":"activated","version":"1.0.3"},"news_client":{"status":"activated","version":"1.0.4"},"widget_page":{"status":"activated","version":"1.0.2"},"banner":{"status":"activated","version":"1.0.5"},"multisite":{"status":"activated","version":"1.0.0"}}}'],
-                ['site_key' => $site_key, 'name' => 'settings', 'vars' => '[]'],
-                ['site_key' => $site_key, 'name' => 'counter', 'vars' => '{}'],
-
-                ['site_key' => $site_key, 'name' => 'media_library', 'vars' => '{"container":{}, "file":{"dimensions":{"MAX":{"width":4000, "height":4000}}}}'],
-                ['site_key' => $site_key, 'name' => 'document', 'vars' => '{"instanceId":0,"instanceName":0,"division":false,"revision":false,"comment":true,"assent":true,"nonmember":false,"reply":false}'],
-                ['site_key' => $site_key, 'name' => 'comment', 'vars' => '[]'],
-                ['site_key' => $site_key, 'name' => 'comment_map', 'vars' => '[]'],
-
-                ['site_key' => $site_key, 'name' => 'module/board@board', 'vars' => '{"skinId":"","perPage":10,"pageCount":10,"newTime":1,"comment":true,"assent":true,"dissent":false,"category":false,"anonymity":false,"anonymityName":"Anonymity","managerEmail":"","division":false,"revision":true,"dynamicFieldList":[],"recursiveDelete":true,"orderType":"","useCaptcha":false,"useTag":true,"urlType":"slug","deleteToTrash":false,"newCommentNotice":false,"secretPost":true,"useApprove":false,"listColumns":["favorite","title","writer","assent_count","read_count","created_at"],"sortListColumns":["favorite","title","writer","assent_count","read_count","created_at","updated_at","dissent_count"],"formColumns":["title","content"],"sortFormColumns":["title","content"]}'],
-                ['site_key' => $site_key, 'name' => 'skins', 'vars' => '[]'],
-                ['site_key' => $site_key, 'name' => 'skins.selected', 'vars' => '[]'],
-                ['site_key' => $site_key, 'name' => 'skins.configs', 'vars' => '[]'],
-
-                ['site_key' => $site_key, 'name' => 'theme', 'vars' => '[]'],
-                ['site_key' => $site_key, 'name' => 'theme.settings', 'vars' => '[]'],
-                ['site_key' => $site_key, 'name' => 'theme.settings.theme/together@together', 'vars' => '[]'],
-
-                ['site_key' => $site_key, 'name' => 'user', 'vars' => '[]'],
-                ['site_key' => $site_key, 'name' => 'user.common', 'vars' => '{"useCaptcha":false,"webmasterName":"webmaster","webmasterEmail":"webmaster@domain.com"}'],
-                ['site_key' => $site_key, 'name' => 'user.register', 'vars' => '{"secureLevel":"low","joinable":true,"register_process":"activated","term_agree_type":"pre","display_name_unique":false,"use_display_name":true,"password_rules":"min:6|alpha|numeric|special_char"}'],
-                ['site_key' => $site_key, 'name' => 'toggleMenu@user', 'vars' => '{"activate":["user\/toggleMenu\/xpressengine@profile","user\/toggleMenu\/xpressengine@manage"]}'],
-
-                ['site_key' => $site_key, 'name' => 'dynamicField','vars' => '{"required":false,"sortable":false,"searchable":false,"use":true,"tableMethod":false}']
             ]);
 
+            //코어 마이그레이션 실행
+            $this->runMigrations($site_key);
+
             // set site default theme
-            $theme = ['desktop' => 'theme/together@together.0', 'mobile' => 'theme/together@together.0'];
+            $theme = ['desktop' => $request->get('theme_desktop'), 'mobile' => $request->get('theme_mobile')];
             app('xe.theme')->setSiteTheme($theme);
 
             // 기본 메뉴 추가 (main) 추가.
             /** @var MenuHandler $menuHandler */
             $menuHandler = app('xe.menu');
 
-            // 기본 메뉴 config  설정 (theme)
-            $defaultMenuTheme = 'theme/together@together.0';
-
+            // 기본 메뉴 config  설정
             $mainMenu = $menuHandler->createMenu([
                 'title' => 'Main Menu',
                 'description' => 'Main Menu',
                 'site_key' => $site_key
             ]);
-            $menuHandler->setMenuTheme($mainMenu, $defaultMenuTheme, $defaultMenuTheme, $site_key);
+            $menuHandler->setMenuTheme($mainMenu, $request->get('theme_desktop'), $request->get('theme_mobile'), $site_key);
             app('xe.permission')->register($mainMenu->getKey(), $menuHandler->getDefaultGrant(), $site_key);
 
-            $this->setThemeConfig($mainMenu->id, $site_key);
+            $this->setThemeConfig($mainMenu->id, $request->get('theme_desktop'), $request->get('theme_mobile'), $site_key);
 
             //for together
-            $this->widgetPageModuleMenuSetup($mainMenu,$site_key,$request->get('site_title'));
-            $this->boardModuleMenuSetup($mainMenu, $site_key);
+            $this->widgetPageModuleMenuSetup($mainMenu,$site_key,$request->get('site_title'), $request->get('theme_desktop'), $request->get('theme_mobile'));
+            $this->boardModuleMenuSetup($mainMenu, $site_key, $request->get('theme_desktop'), $request->get('theme_mobile'));
 
             $this->app['xe.site']->setCurrentSite($defaultSite);
         } catch (\Exception $e) {
@@ -184,11 +176,67 @@ class MultisiteSettingsController extends BaseController
         ]);
     }
 
+    public function destroy(Request $request){
+        $args = $request->all();
 
-    public function widgetPageModuleMenuSetup($mainMenu,$site_key,$site_title)
+
+        \XeDB::beginTransaction();
+        try {
+
+            if($args['target_site_key'] != 0){
+                //이동 할 컨텐츠 준비
+                $target_contents = array();
+                if(isset($args['contents'])){
+                    foreach($args['contents'] as $target_module => $on) $target_contents[] = $target_module;
+                }
+
+                //TODO - 이동처리 (일단 문서만)
+                //DB::table('instance_route')->whereIn('module',join($target_contents))->where('site_key',$args['site_key'])->update('site_key',$args['target_site_key']);
+            }
+
+            //삭제시작
+            \XeDB::table('site')->where('site_key',$args['site_key'])->delete();
+            \XeDB::table('site_domains')->where('site_key',$args['site_key'])->delete();
+            \XeDB::table('menu')->where('site_key',$args['site_key'])->delete();
+            \XeDB::table('menu_item')->where('site_key',$args['site_key'])->delete();
+            \XeDB::table('permissions')->where('site_key',$args['site_key'])->delete();
+            \XeDB::table('instance_route')->where('site_key',$args['site_key'])->delete();
+
+            \XeDB::table('config')->where('site_key',$args['site_key'])->delete();
+            \XeDB::table('config')->where('name','site.'.$args['site_key'])->delete();
+
+        } catch (Exception $e) {
+            \XeDB::rollBack();
+
+            throw $e;
+        }
+        \XeDB::commit();
+
+        return redirect()->route('settings.multisite.index')->with('alert', [
+            'type' => 'success', 'message' => xe_trans('multisite::deletedNewSite')
+        ]);
+    }
+
+    public function runMigrations($site_key){
+        /** @var Filesystem $filesystem */
+        $filesystem = app('files');
+        $files = $filesystem->files(base_path('migrations'));
+
+        usort($files, function ($pre, $post) {
+            return $pre->getFileName() > $post->getFileName();
+        });
+        foreach ($files as $file) {
+            $class = "\\Xpressengine\\Migrations\\".basename($file, '.php');
+            $this->migrations[] = $migration = new $class();
+            /** @var Migration $migration */
+            if (method_exists($migration, 'installed')) {
+                $migration->installed($site_key);
+            }
+        }
+    }
+
+    public function widgetPageModuleMenuSetup($mainMenu,$site_key,$site_title,$desktop_theme, $mobile_theme)
     {
-        $theme = 'theme/together@together.1';
-
         /** @var MenuHandler $menuHandler */
         $menuHandler = app('xe.menu');
 
@@ -222,7 +270,7 @@ class MultisiteSettingsController extends BaseController
 
         $item = $menuHandler->createItem($mainMenu, $inputs, $menuTypeInput);
 
-        $menuHandler->setMenuItemTheme($item, $theme, $theme, $site_key);
+        $menuHandler->setMenuItemTheme($item, $desktop_theme, $mobile_theme, $site_key);
         app('xe.permission')->register($menuHandler->permKeyString($item), new Grant, $site_key);
 
         $this->siteDefaultConfig($mainMenu, $item->id, $site_key, $site_title);
@@ -237,7 +285,7 @@ class MultisiteSettingsController extends BaseController
      *
      * @return MenuItem
      */
-    public function boardModuleMenuSetup($mainMenu, $site_key)
+    public function boardModuleMenuSetup($mainMenu, $site_key, $desktop_theme, $mobile_theme)
     {
         // board, menu item 추가.
         /** @var MenuHandler $menuHandler */
@@ -265,14 +313,14 @@ class MultisiteSettingsController extends BaseController
             'activated' => '1',
         ];
         $boardMenuTypeInput = [
-            'page_title' => 'XpressEngine3 Board',
+            'page_title' => 'Multisite Board',
             'board_name' => 'Board',
             'site_key' => $site_key,
             'revision' => 'true',
             'division' => 'false',
         ];
         $boardItem = $menuHandler->createItem($mainMenu, $boardInputs, $boardMenuTypeInput);
-        $menuHandler->setMenuItemTheme($boardItem, null, null, $site_key);
+        $menuHandler->setMenuItemTheme($boardItem, $desktop_theme, $desktop_theme, $site_key);
 
         app('xe.permission')->register($menuHandler->permKeyString($boardItem), new Grant, $site_key);
 
@@ -280,12 +328,24 @@ class MultisiteSettingsController extends BaseController
         $skinHandler = app('xe.skin');
     }
 
-    protected function setThemeConfig($mainMenu, $site_key)
+    protected function setThemeConfig($mainMenu, $desktop_theme, $mobile_theme, $site_key)
     {
+        //set parent Config
+//        \DB::table('config')->insert([
+//            ['site_key' => $site_key, 'name' => 'theme.settings' , 'vars' => '[]'],
+//        ]);
+        $themes = array_unique([$desktop_theme, $mobile_theme]);
+        foreach($themes as $theme){
+            $theme_tree = explode(".",$theme);
+            \DB::table('config')->insert([
+                ['site_key' => $site_key, 'name' => 'theme.settings.' . $theme_tree[0] , 'vars' => '[]'],
+            ]);
+        }
+
         /** @var ThemeHandler $themeHandler */
         $themeHandler = app('xe.theme');
-        $themeHandler->setThemeConfig('theme/together@together.0', 'mainMenu', $mainMenu, $site_key);
-        $themeHandler->setThemeConfig('theme/together@together.1', 'mainMenu', $mainMenu, $site_key);
+        $themeHandler->setThemeConfig($desktop_theme, 'mainMenu', $mainMenu, $site_key);
+        $themeHandler->setThemeConfig($mobile_theme, 'mainMenu', $mainMenu, $site_key);
     }
 
 

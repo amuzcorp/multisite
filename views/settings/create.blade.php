@@ -1,10 +1,6 @@
 @section('page_title')
     <h2>{{ $title }}</h2>
 @stop
-@section('page_description')
-    <small>{{xe_trans('multisite::searchSitesCount') }}</small>
-@endsection
-
 
 
 <form action="{{ route('settings.multisite.store') }}" method="post" enctype="multipart/form-data">
@@ -25,20 +21,27 @@
                     <div class="form-group">
                         <label for="site_key">{{xe_trans('multisite::host')}}</label>
                         <div class="input-group">
-                            <input type="text" id="site_key" name="site_key" class="form-control" value="{{Request::old('host')}}" aria-describedby="basic-addon1">
+                            <input type="text" id="site_key" name="host" class="form-control" value="{{Request::old('host')}}" aria-describedby="basic-addon1">
                             <span class="input-group-addon" id="basic-addon1">.{{ $defaultSite->FeaturedDomain->first()->domain }}</span>
                         </div>
                     </div>
+
                     <div class="form-group">
                         <label>{{ xe_trans('xe::site')}} {{ xe_trans('xe::name') }}</label> <small>{{ xe_trans('xe::inputSiteNameDescription') }}</small>
                         {!! uio('langText', ['name'=>'site_title']) !!}
+                    </div>
+
+
+                    <div class="form-group">
+                        <label>{{ xe_trans('xe::site')}} {{ xe_trans('xe::theme')}}</label> <small>{{ xe_trans('xe::themeSettingsDescription') }}</small>
+                        {!! uio('themeSelect') !!}
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="pull-right">
-            <a href="{{ url()->previous(route('settings.menu.index')) }}" class="btn btn-default">{{xe_trans('xe::cancel')}}</a>
+            <a href="{{ url()->previous(route('settings.multisite.index')) }}" class="btn btn-default">{{xe_trans('xe::cancel')}}</a>
             <button type="submit" class="btn btn-primary">{{xe_trans('xe::submit')}}</button>
         </div>
     </div>

@@ -5,6 +5,7 @@ use Route;
 use Xpressengine\Plugin\AbstractPlugin;
 use Xpressengine\Translation\Translator;
 use XeRegister;
+use XeSite;
 
 use Amuz\XePlugin\Multisite\Models\Site;
 use Amuz\XePlugin\Multisite\Observers\SiteObserver;
@@ -25,9 +26,15 @@ class Plugin extends AbstractPlugin
 
         // implement code
         $this->route();
-        $this->registerSitesPermissions();
-        $this->registerSettingsMenus();
-        $this->registerSettingsRoute();
+
+        if(XeSite::getCurrentSiteKey() == 'default'){
+            $this->registerSitesPermissions();
+            $this->registerSettingsMenus();
+            $this->registerSettingsRoute();
+        }else{
+            //remove default admin menu
+            \XeRegister::push('settings/menu','extension',['display'=>false]);
+        }
     }
 
     public static function putLang()
@@ -108,9 +115,22 @@ class Plugin extends AbstractPlugin
           'settings_menu' => 'sites.create'
         ]);
 
+        Route::get('/edit/{site_key}/{mode?}', [
+          'as' => 'settings.multisite.edit',
+          'uses' => 'MultisiteSettingsController@edit',
+        ]);
+
         Route::post('/store', [
-          'as' => 'settings.multisite.store',
-          'uses' => 'MultisiteSettingsController@store',
+              'as' => 'settings.multisite.store',
+              'uses' => 'MultisiteSettingsController@store',
+        ]);
+        Route::post('/update', [
+              'as' => 'settings.multisite.update',
+              'uses' => 'MultisiteSettingsController@update',
+        ]);
+        Route::post('/destroy', [
+              'as' => 'settings.multisite.destroy',
+              'uses' => 'MultisiteSettingsController@destroy',
         ]);
       },['namespace' => 'Amuz\XePlugin\Multisite\Controllers']);
     }
