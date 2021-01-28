@@ -5,13 +5,13 @@ use Illuminate\Filesystem\Filesystem;
 use XeFrontend;
 use XePresenter;
 use XeLang;
-use Plugin;
+use XeToggleMenu;
+use XeConfig;
 use XeDB;
 
 use Illuminate\Contracts\Foundation\Application;
 use Amuz\XePlugin\Multisite\Models\Site;
 use Amuz\XePlugin\Multisite\Models\SiteDomain;
-use Amuz\XePlugin\Multisite\Models\SiteConfig;
 use App\Http\Controllers\Controller as BaseController;
 use Xpressengine\Config\ConfigManager;
 use Xpressengine\Http\Request;
@@ -19,11 +19,13 @@ use Xpressengine\Menu\MenuHandler;
 use Xpressengine\Menu\Models\Menu;
 use Xpressengine\Menu\Models\MenuItem;
 use Xpressengine\Permission\Grant;
-use Xpressengine\Plugins\Board\Components\Skins\Board\Blog\BlogSkin;
-use Xpressengine\Plugins\Board\Components\Skins\Board\Gallery\GallerySkin;
+use Xpressengine\Plugin\Exceptions\PluginActivationFailedException;
+use Xpressengine\Plugins\Board\Plugin\Resources as BoardResources;
+use Xpressengine\Plugins\Comment\Handler as commentHandler;
 use Xpressengine\Skin\SkinHandler;
 use Xpressengine\Support\Migration;
 use Xpressengine\Theme\ThemeHandler;
+use Xpressengine\User\Rating;
 
 class MultisiteSettingsController extends BaseController
 {
@@ -125,8 +127,6 @@ class MultisiteSettingsController extends BaseController
             $Domain->Site()->associate($Site);
             $Domain->save();
 
-            //사이트 테마설정
-
             //필수적인 상위권한만 추가
             \DB::table('permissions')->insert([
                 ['site_key' => $site_key, 'name' => 'module/board@board', 'grants' => '{"create":{"rating":"user","group":[],"user":[],"except":[]},"read":{"rating":"guest","group":[],"user":[],"except":[]},"list":{"rating":"guest","group":[],"user":[],"except":[]},"manage":{"rating":"manager","group":[],"user":[],"except":[]}}'],
@@ -141,6 +141,7 @@ class MultisiteSettingsController extends BaseController
             //코어 마이그레이션 실행
             $this->runMigrations($site_key);
 
+            //사이트 테마설정
             // set site default theme
             $theme = ['desktop' => $request->get('theme_desktop'), 'mobile' => $request->get('theme_mobile')];
             app('xe.theme')->setSiteTheme($theme);
@@ -155,14 +156,47 @@ class MultisiteSettingsController extends BaseController
                 'description' => 'Main Menu',
                 'site_key' => $site_key
             ]);
-            $menuHandler->setMenuTheme($mainMenu, $request->get('theme_desktop'), $request->get('theme_mobile'), $site_key);
+            $menuHandler->setMenuTheme($mainMenu, $request->get('theme_desktop'), $request->get('theme_mobile'));
             app('xe.permission')->register($mainMenu->getKey(), $menuHandler->getDefaultGrant(), $site_key);
 
-            $this->setThemeConfig($mainMenu->id, $request->get('theme_desktop'), $request->get('theme_mobile'), $site_key);
+            $theme_plugin = $this->setThemeConfig($mainMenu->id, $request->get('theme_desktop'), $request->get('theme_mobile'), $site_key);
 
-            //for together
+            //Merge Plugin , theme plugin
+            $plugins = $request->get('extensions') ? $request->get('extensions') : array();
+            $plugins = array_merge($plugins,$theme_plugin);
+            $plugins = array_keys($plugins);
+
+            //do Activate Plugins
+            $vars = ['list' => []];
+            $need_default_plugin_functions = ['comment','board'];
+            foreach ($plugins as $id) {
+                $entity = \XePlugin::getPlugin($id);
+                $installedVersion = $entity->getInstalledVersion();
+                try {
+                    $entity->activate($installedVersion);
+                } catch (\Exception $e) {
+                    throw new PluginActivationFailedException([], null, $e);
+                }
+
+                //기본플러그인에서 멀티사이트에 대한 고려가 안되어 별도의 함수실행이 필요한 경우 (activate() 만으로 동작이 안될때)
+                if(in_array($id,$need_default_plugin_functions)) $this->pluginActivateforMultisite($id);
+
+                //플러그인 업데이트 따라가기
+                if(!$entity->checkUpdated($installedVersion)){
+                    $entity->update($installedVersion);
+                }
+                //set status
+                $vars['list'][$id]['status'] = 'activated';
+                $vars['list'][$id]['version'] = $entity->getVersion();
+            }
+
+            \DB::table('config')->where('name', 'plugin')->where('site_key', $site_key)->update(
+                ['vars' => json_enc($vars)]
+            );
+            //for Menu Item and theme
             $this->widgetPageModuleMenuSetup($mainMenu,$site_key,$request->get('site_title'), $request->get('theme_desktop'), $request->get('theme_mobile'));
             $this->boardModuleMenuSetup($mainMenu, $site_key, $request->get('theme_desktop'), $request->get('theme_mobile'));
+
 
             $this->app['xe.site']->setCurrentSite($defaultSite);
         } catch (\Exception $e) {
@@ -290,7 +324,6 @@ class MultisiteSettingsController extends BaseController
         // board, menu item 추가.
         /** @var MenuHandler $menuHandler */
         $menuHandler = app('xe.menu');
-
         $boardBoardTitle = XeLang::genUserKey();
         foreach (XeLang::getLocales() as $locale) {
             $value = "Board";
@@ -320,7 +353,7 @@ class MultisiteSettingsController extends BaseController
             'division' => 'false',
         ];
         $boardItem = $menuHandler->createItem($mainMenu, $boardInputs, $boardMenuTypeInput);
-        $menuHandler->setMenuItemTheme($boardItem, $desktop_theme, $desktop_theme, $site_key);
+        $menuHandler->setMenuItemTheme($boardItem, $desktop_theme, $desktop_theme);
 
         app('xe.permission')->register($menuHandler->permKeyString($boardItem), new Grant, $site_key);
 
@@ -330,22 +363,31 @@ class MultisiteSettingsController extends BaseController
 
     protected function setThemeConfig($mainMenu, $desktop_theme, $mobile_theme, $site_key)
     {
-        //set parent Config
-//        \DB::table('config')->insert([
-//            ['site_key' => $site_key, 'name' => 'theme.settings' , 'vars' => '[]'],
-//        ]);
-        $themes = array_unique([$desktop_theme, $mobile_theme]);
+        $desktop_theme_parent = explode(".",$desktop_theme)[0];
+        $mobile_theme_parent = explode(".",$mobile_theme)[0];
+        //duplicate from default site theme
+//        $desktop_val = \DB::table('config')->where('site_key','default')->where('name','theme.settings.' . $desktop_theme)->first();
+//        $mobile_val = \DB::table('config')->where('site_key','default')->where('name','theme.settings.' . $mobile_theme)->first();
+//        $desktop_val->site_key = $site_key;
+//        $mobile_val->site_key = $site_key;
+//        dd($mobile_val);
+
+        $themes = array_unique([$desktop_theme_parent, $mobile_theme_parent]);
+        $theme_plugins = array();
         foreach($themes as $theme){
-            $theme_tree = explode(".",$theme);
             \DB::table('config')->insert([
-                ['site_key' => $site_key, 'name' => 'theme.settings.' . $theme_tree[0] , 'vars' => '[]'],
+                ['site_key' => $site_key, 'name' => 'theme.settings.' . $theme , 'vars' => '[]'],
             ]);
+            //theme/together@together.0
+            $plugin_name = substr($theme,strlen('theme/'),strpos($theme,"@") - strlen('theme/'));
+            $theme_plugins[$plugin_name] = true;
         }
 
         /** @var ThemeHandler $themeHandler */
         $themeHandler = app('xe.theme');
-        $themeHandler->setThemeConfig($desktop_theme, 'mainMenu', $mainMenu, $site_key);
-        $themeHandler->setThemeConfig($mobile_theme, 'mainMenu', $mainMenu, $site_key);
+        $themeHandler->setThemeConfig($desktop_theme, 'mainMenu', $mainMenu);
+        $themeHandler->setThemeConfig($mobile_theme, 'mainMenu', $mainMenu);
+        return $theme_plugins;
     }
 
 
@@ -369,5 +411,46 @@ class MultisiteSettingsController extends BaseController
         $configEntity->set('site_title', $site_title);
 
         $configManager->modify($configEntity);
+    }
+
+
+    public function pluginActivateForMultisite($plugin_id){
+        switch($plugin_id){
+            case "comment" :
+                // put translation source
+                XeLang::putFromLangDataSource('comment', base_path('plugins/comment/langs/lang.php'));
+
+                XeDB::transaction(function () {
+                    /** @var commentHandler $handler */
+                    $handler = app(commentHandler::class);
+
+                    $grant = new Grant();
+                    $grant->set('create', [
+                        Grant::RATING_TYPE => Rating::USER,
+                        Grant::GROUP_TYPE => [],
+                        Grant::USER_TYPE => [],
+                        Grant::EXCEPT_TYPE => [],
+                        Grant::VGROUP_TYPE => []
+                    ]);
+                    $grant->set('manage', [
+                        Grant::RATING_TYPE => Rating::MANAGER,
+                        Grant::GROUP_TYPE => [],
+                        Grant::USER_TYPE => [],
+                        Grant::EXCEPT_TYPE => [],
+                        Grant::VGROUP_TYPE => []
+                    ]);
+                    app('xe.permission')->register($handler->getKeyForPerm(), $grant);
+                    // 기본 설정
+                    XeConfig::set('comment', $handler->getDefaultConfig());
+
+                    XeToggleMenu::setActivates('comment', null, []);
+                });
+                break;
+            case 'board' :
+                BoardResources::createDefaultConfig();
+                BoardResources::createShareConfig();
+                BoardResources::putLang();
+                break;
+        } // endswitch
     }
 }
