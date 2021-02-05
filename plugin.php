@@ -138,16 +138,6 @@ class Plugin extends AbstractPlugin
     protected function route()
     {
         // implement code
-
-        Route::fixed(
-            $this->getId(),
-            function () {
-                Route::get('/', [
-                    'as' => 'multisite::index','uses' => 'Amuz\XePlugin\Multisite\Controller@index'
-                ]);
-            }
-        );
-
     }
 
     /**
