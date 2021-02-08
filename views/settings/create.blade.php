@@ -28,7 +28,7 @@
                             <div class="form-group">
                                 <label for="site_key">{{xe_trans('multisite::host')}}</label> <small>호스트는 향후 변경이 불가능합니다.</small>
                                 <div class="input-group">
-                                    <input type="text" id="site_key" name="host" class="form-control" value="{{Request::old('host')}}" aria-describedby="basic-addon1">
+                                    <input type="text" id="site_key" name="host" class="form-control" value="{{Request::old('host')}}" aria-describedby="basic-addon1" maxlength="50">
                                     <span class="input-group-addon" id="basic-addon1">.{{ $defaultSite->FeaturedDomain->first()->domain }}</span>
                                 </div>
                             </div>
