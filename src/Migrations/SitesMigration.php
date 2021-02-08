@@ -23,7 +23,7 @@ class SitesMigration
                 $table->engine = "InnoDB";
 
                 $table->string('domain'); // pk
-                $table->uuid('site_key'); // fk
+                $table->string('site_key', 50); // fk
 
                 $table->uuid('index_instance')->nullable()->default(null);
 
