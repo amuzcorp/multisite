@@ -28,9 +28,7 @@ class SiteListModule extends AbstractModule
     {
         Route::instance(self::getId(), function () {
             Route::get('/', ['as' => 'index', 'uses' => 'MultisiteController@index']);
-            Route::get('/show/{id}', ['as' => 'show', 'uses' => 'MultisiteController@show']);
-
-            Route::get('/{slug}', ['as' => 'slug', 'uses' => 'MultisiteController@slug']);
+            Route::get('/{site_key}', ['as' => 'show', 'uses' => 'MultisiteController@show']);
         }, ['namespace' => 'Amuz\XePlugin\Multisite\Controllers']);
 
     }

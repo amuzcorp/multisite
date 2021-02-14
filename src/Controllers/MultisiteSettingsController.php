@@ -80,8 +80,26 @@ class MultisiteSettingsController extends BaseController
             );
         }
 
+        $registered = \XeRegister::get('multisite/site_info');
+        $infos = array();
+        foreach ($registered as $key => $val){
+            $keys = explode(".",$key);
+            if($keys[0] != "setting") continue;
+
+            if(!isset($infos[$keys[1]])) $infos[$keys[1]] = array();
+            if(count($keys) > 2) {
+                if(!isset($infos[$keys[1]]['fields'])) $infos[$keys[1]]['fields'] = array();
+                $infos[$keys[1]]['fields'][$keys[2]] = $val;
+            }else{
+                $infos[$keys[1]] = $val;
+            }
+        }
+        usort($infos, function($a, $b){
+            return $a['ordering'] - $b['ordering'];
+        });
+
         $defaultSite = Site::find('default');
-        return XePresenter::make('multisite::views.settings.edit', compact('title','site_key', 'mode', 'Site','defaultSite'));
+        return XePresenter::make('multisite::views.settings.edit', compact('title','site_key', 'mode', 'Site', 'infos', 'defaultSite'));
     }
 
     public function create(){

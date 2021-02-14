@@ -35,6 +35,11 @@
                     "name": "SitelistDefault skin",
                     "description": "The skin supported by Multisite plugin.",
                     "class": "Amuz\\XePlugin\\Multisite\\Components\\Skins\\SiteListDefault\\SiteListDefault"
+                },
+                "module/multisite@sitelist/settingsSkin/multisite@common_settings_skin": {
+                  "name": "Site List Settings Skin",
+                  "description": "The skin supported by Multisite plugin.",
+                  "class": "Amuz\\XePlugin\\Multisite\\Components\\Skins\\Common\\CommonSettingsSkin"
                 }
             }
         }

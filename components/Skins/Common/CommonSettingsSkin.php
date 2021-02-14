@@ -1,6 +1,6 @@
 <?php
 
-namespace Overcode\XePlugin\DynamicFactory\Components\Skins\Cpt\Settings\Common;
+namespace Amuz\XePlugin\Multisite\Components\Skins\Common;
 
 use Xpressengine\Presenter\Presenter;
 use Xpressengine\Skin\AbstractSkin;
@@ -9,7 +9,7 @@ use XePresenter;
 
 class CommonSettingsSkin extends AbstractSkin
 {
-    protected static $skinAlias = 'dynamic_factory/components/Skins/Cpt/Settings/Common/views';
+    protected static $skinAlias = 'multisite/components/Skins/Common/views';
 
     public function render()
     {

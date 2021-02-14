@@ -1,5 +1,5 @@
 @section('page_title')
-    <h2>{{xe_trans('board::boardDetailConfigures')}}</h2>
+    <h2>사이트 리스트 스킨설정</h2>
 @endsection
 
 @section('page_description')@endsection
