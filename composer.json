@@ -1,40 +1,51 @@
 {
-  "name": "xpressengine-plugin/multisite",
-  "description": "이 패키지는 XpressEngine을 분양형 멀티사이트 기반으로 만들어줍니다.",
-  "keywords": [
-    "xpressengine",
-    "plugin",
-    "멀티사이트",
-    "multisite",
-    "site"
-  ],
-  "license": "LGPL-3.0-or-later",
-  "version": "1.0.0",
-  "type": "xpressengine-plugin",
-  "support": {
-    "email": "support.dev@amuz.co.kr"
-  },
-  "authors": [
-    {
-      "name": "XISO",
-      "email": "xiso@amuz.co.kr",
-      "homepage": "https://amuz.co.kr",
-      "role": "Developer"
+    "name": "xpressengine-plugin/multisite",
+    "description": "이 패키지는 XpressEngine을 분양형 멀티사이트 기반으로 만들어줍니다.",
+    "keywords": [
+        "xpressengine",
+        "plugin",
+        "멀티사이트",
+        "multisite",
+        "site"
+    ],
+    "license": "LGPL-3.0-or-later",
+    "version": "1.0.0",
+    "type": "xpressengine-plugin",
+    "support": {
+        "email": "support.dev@amuz.co.kr"
+    },
+    "authors": [
+        {
+            "name": "XISO",
+            "email": "xiso@amuz.co.kr",
+            "homepage": "https://amuz.co.kr",
+            "role": "Developer"
+        }
+    ],
+    "extra": {
+        "xpressengine": {
+            "title": "멀티사이트",
+            "component": {
+                "module/multisite@sitelist": {
+                    "class": "Amuz\\XePlugin\\Multisite\\Components\\Modules\\SiteList\\SiteListModule",
+                    "name": "Site List",
+                    "description": "사이트 리스트"
+                },
+                "module/multisite@sitelist/skin/multisite@site_list_default": {
+                    "name": "SitelistDefault skin",
+                    "description": "The skin supported by Multisite plugin.",
+                    "class": "Amuz\\XePlugin\\Multisite\\Components\\Skins\\SiteListDefault\\SiteListDefault"
+                }
+            }
+        }
+    },
+    "require": {
+        "xpressengine/xpressengine": "~3.0.12"
+    },
+    "autoload": {
+        "psr-4": {
+            "Amuz\\XePlugin\\Multisite\\": "src/",
+            "Amuz\\XePlugin\\Multisite\\Components\\": "components/"
+        }
     }
-  ],
-  "extra": {
-    "xpressengine": {
-      "title": "멀티사이트",
-      "component": {
-      }
-    }
-  },
-  "require": {
-    "xpressengine/xpressengine": "~3.0.12"
-  },
-  "autoload": {
-    "psr-4": {
-      "Amuz\\XePlugin\\Multisite\\": "src/"
-    }
-  }
 }

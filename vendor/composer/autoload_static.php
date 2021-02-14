@@ -9,11 +9,16 @@ class ComposerStaticInit3414b101688b9f6d2d64d609d57600fa
     public static $prefixLengthsPsr4 = array (
         'A' => 
         array (
+            'Amuz\\XePlugin\\Multisite\\Components\\' => 35,
             'Amuz\\XePlugin\\Multisite\\' => 24,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
+        'Amuz\\XePlugin\\Multisite\\Components\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/components',
+        ),
         'Amuz\\XePlugin\\Multisite\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',

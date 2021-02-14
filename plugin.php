@@ -7,6 +7,8 @@ use Xpressengine\Translation\Translator;
 use XeRegister;
 use XeSite;
 
+use Amuz\XePlugin\Multisite\Components\Modules\SiteList\SiteListModule;
+
 use Amuz\XePlugin\Multisite\Models\Site;
 use Amuz\XePlugin\Multisite\Observers\SiteObserver;
 use Amuz\XePlugin\Multisite\Migrations\SitesMigration;
@@ -120,6 +122,11 @@ class Plugin extends AbstractPlugin
           'uses' => 'MultisiteSettingsController@edit',
         ]);
 
+        Route::get('moduleSetting/{site_key}', [
+            'as' => 'settings.multisite.module.setting',
+            'uses' => 'MultisiteSettingsController@moduleSetting'
+        ]);
+
         Route::post('/store', [
               'as' => 'settings.multisite.store',
               'uses' => 'MultisiteSettingsController@store',
@@ -133,6 +140,15 @@ class Plugin extends AbstractPlugin
               'uses' => 'MultisiteSettingsController@destroy',
         ]);
       },['namespace' => 'Amuz\XePlugin\Multisite\Controllers']);
+
+      //set sitelist Module Routes
+        Route::settings(SiteListModule::getId(), function () {
+            Route::get('edit/{pageId}', ['as' => 'manage.multisite.edit', 'uses' => 'MultisiteManageController@edit']);
+            Route::post(
+                'update/{pageId}',
+                ['as' => 'manage.multisite.update', 'uses' => 'MultisiteManageController@update']
+            );
+        }, ['namespace' => 'Amuz\XePlugin\Multisite\Controllers']);
     }
 
     protected function route()

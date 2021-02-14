@@ -6,5 +6,6 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Amuz\\XePlugin\\Multisite\\Components\\' => array($baseDir . '/components'),
     'Amuz\\XePlugin\\Multisite\\' => array($baseDir . '/src'),
 );
