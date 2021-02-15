@@ -26,7 +26,9 @@
                                         <div class="{{ isset($field["size"]) ? $field["size"] : "col-sm-6" }}">
                                             <div class="form-group">
                                                 @php
-                                                    $field['uio']['value'] = $Site->meta->get($config_id);
+                                                    if($Site->meta->get($config_id) ==! null){
+                                                        $field['uio']['value'] = $Site->meta->get($config_id);
+                                                    }
                                                 @endphp
                                                 {{ uio($field['_type'],$field["uio"]) }}
                                             </div>

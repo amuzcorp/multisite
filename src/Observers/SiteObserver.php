@@ -30,7 +30,7 @@ class SiteObserver
 
         $site_meta = $this->config->get('site_meta',true,$Site->site_key);
         $site_metas = $this->config->children($site_meta);
-        if(!isset($site_metas[0])) $site_metas = [0 => array()];
+        if(!isset($site_metas[0])) $site_metas = [0 => $this->config];
         $Site->meta = $site_metas[0];
     }
 
