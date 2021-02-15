@@ -46,7 +46,7 @@
                   "description": "사이트 목록을 출력하는 위젯을 만듭니다.",
                   "class": "Amuz\\XePlugin\\Multisite\\Components\\Widgets\\SiteList\\SiteListWidget"
                 },
-                "widget/multisite@sitelist/skin/multisite@default": {
+                "widget/multisite@sitelist/skin/multisite@common": {
                   "class": "Amuz\\XePlugin\\Multisite\\Components\\Widgets\\SiteList\\Skins\\Common\\CommonSkin",
                   "name": "기본 스킨",
                   "description": "사이트 리스트 위젯용 기본 스킨"
