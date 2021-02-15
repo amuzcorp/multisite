@@ -33,7 +33,7 @@
                                     <div class="left-group">
                                         <span class="plugin-title">
                                             <span class="icon-wrap" style="background-image:url('{{ $Site->config->get('favicon.path') ? $Site->config->get('favicon.path') : '/assets/core/settings/img/logo.png' }}');"></span>
-                                            <a href="{{ instance_route('show',['site_key' => $Site->site_key]) }}"{{ xe_trans($Site->config->get('site_title')) }}
+                                            <a href="{{ instance_route('show',['site_key' => $Site->site_key]) }}">{{ xe_trans($Site->config->get('site_title')) }}</a>
                                         </span>
                                         <dl>
                                             <dt class="sr-only">Domain</dt>

@@ -7,7 +7,7 @@
             </div>
         </div>
         <div class="panel-collapse collapse in">
-            <form method="post" id="f-editor-setting" action="{{ route('settings.multisite.update', $site_key) }}">
+            <form method="post" id="f-editor-setting" action="{{ route('settings.multisite.update', ['site_key' => $site_key]) }}">
                 {{ csrf_field() }}
                 <div class="panel-body">
                     @foreach($infos as $info)
@@ -22,9 +22,12 @@
 
                             <div class="panel-body">
                                 <div class="row">
-                                    @foreach($info['fields'] as $field)
+                                    @foreach($info['fields'] as $config_id => $field)
                                         <div class="{{ isset($field["size"]) ? $field["size"] : "col-sm-6" }}">
                                             <div class="form-group">
+                                                @php
+                                                    $field['uio']['value'] = $Site->meta->get($config_id);
+                                                @endphp
                                                 {{ uio($field['_type'],$field["uio"]) }}
                                             </div>
                                         </div>

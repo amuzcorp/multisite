@@ -70,6 +70,29 @@ class MultisiteSettingsController extends BaseController
         ]);
     }
 
+    static public function getSiteInfos(){
+        $registered = \XeRegister::get('multisite/site_info');
+        $infos = array();
+        foreach ($registered as $key => $val){
+            $keys = explode(".",$key);
+            if($keys[0] != "setting") continue;
+
+            if(!isset($infos[$keys[1]])) $infos[$keys[1]] = array();
+            if(count($keys) > 2) {
+                $val["config_id"] = $keys[2];
+                if(!isset($infos[$keys[1]]['fields'])) $infos[$keys[1]]['fields'] = array();
+                $infos[$keys[1]]['fields'][$keys[2]] = $val;
+            }else{
+                $val["config_id"] = $keys[1];
+                $infos[$keys[1]] = $val;
+            }
+        }
+        usort($infos, function($a, $b){
+            return $a['ordering'] - $b['ordering'];
+        });
+        return $infos;
+    }
+
     public function edit($site_key, $mode = null){
         $title = xe_trans('multisite::multisite');
 
@@ -80,26 +103,51 @@ class MultisiteSettingsController extends BaseController
             );
         }
 
-        $registered = \XeRegister::get('multisite/site_info');
-        $infos = array();
-        foreach ($registered as $key => $val){
-            $keys = explode(".",$key);
-            if($keys[0] != "setting") continue;
-
-            if(!isset($infos[$keys[1]])) $infos[$keys[1]] = array();
-            if(count($keys) > 2) {
-                if(!isset($infos[$keys[1]]['fields'])) $infos[$keys[1]]['fields'] = array();
-                $infos[$keys[1]]['fields'][$keys[2]] = $val;
-            }else{
-                $infos[$keys[1]] = $val;
-            }
-        }
-        usort($infos, function($a, $b){
-            return $a['ordering'] - $b['ordering'];
-        });
+        $infos = $this->getSiteInfos();
 
         $defaultSite = Site::find('default');
         return XePresenter::make('multisite::views.settings.edit', compact('title','site_key', 'mode', 'Site', 'infos', 'defaultSite'));
+    }
+
+    public function update(Request $request, $site_key){
+        $Site = Site::find($site_key);
+        if($Site == null){
+            return redirect()->route('settings.multisite.index')->with('alert', [
+                    'type' => 'failed', 'message' => xe_trans('multisite::siteHostNoneExists')]
+            );
+        }
+
+        //set parent config
+        $meta_config = \DB::table('config')->where('name', 'site_meta')
+            ->where('site_key', $site_key)->first();
+        if($meta_config == null){
+            \DB::table('config')->insert(['name' => 'site_meta', 'vars' => '[]', 'site_key' => $site_key]);
+        }
+
+        //arrange configs
+        $infos = $this->getSiteInfos();
+        $config_values = array();
+        foreach($infos as $info){
+            $config_values[$info['config_id']] = array();
+            foreach ($info['fields'] as $field) {
+                $config_values[$info['config_id']][$field['config_id']] = $request->get($field['config_id']);
+            }
+        }
+
+        XeDB::beginTransaction();
+        try {
+            foreach ($config_values as $key => $value) {
+                app('xe.config')->set('site_meta.' . $key, $value, false, null, $site_key);
+            }
+        }catch (\Exception $e) {
+            XeDB::rollback();
+            throw $e;
+        }
+        XeDB::commit();
+
+        return redirect()->route('settings.multisite.edit',['site_key' => $site_key])->with('alert', [
+            'type' => 'success', 'message' => '성공적으로 업데이트 되었습니다.'
+        ]);
     }
 
     public function create(){

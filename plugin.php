@@ -131,7 +131,7 @@ class Plugin extends AbstractPlugin
               'as' => 'settings.multisite.store',
               'uses' => 'MultisiteSettingsController@store',
         ]);
-        Route::post('/update', [
+        Route::post('/update/{site_key}', [
               'as' => 'settings.multisite.update',
               'uses' => 'MultisiteSettingsController@update',
         ]);
@@ -165,8 +165,6 @@ class Plugin extends AbstractPlugin
      */
     public function activate($installedVersion = null)
     {
-        // implement code
-//        (new SitesMigration())->up();
     }
 
     /**
@@ -211,7 +209,6 @@ class Plugin extends AbstractPlugin
     public function checkUpdated()
     {
         // implement code
-
         return parent::checkUpdated();
     }
 

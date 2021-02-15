@@ -86,6 +86,9 @@
                                     </div>
 
                                     <div class="btn-right form-inline">
+                                        {!! isset($Site->plugin->get('list')['pos_config']) && $Site->plugin->get('list')['pos_config']['status'] == 'activated' ? '<span class="xe-badge xe-primary">POS</span>' : '' !!}
+                                        {!! isset($Site->plugin->get('list')['signage']) && $Site->plugin->get('list')['signage']['status'] == 'activated' ? '<span class="xe-badge xe-warning">사이니지</span>' : '' !!}
+                                        <span class="p-2">&nbsp;</span>
                                         <a href="{!! $Site->getDomainLink(false,"settings/setting") !!}" target="_blank" class="xe-btn xe-btn-positive-outline" data-site-key="{{ $Site->site_key }}">{{ xe_trans('xe::defaultSettings') }} {{ xe_trans('xe::modify') }}</a>
                                         <a href="{{ route('settings.multisite.edit',['site_key' => $Site->site_key]) }}" class="xe-btn xe-btn-positive" data-site-key="{{ $Site->site_key }}">{{ xe_trans('xe::settings') }}</a>
                                     </div>
