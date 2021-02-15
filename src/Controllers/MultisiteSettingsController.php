@@ -26,6 +26,8 @@ use Xpressengine\Skin\SkinHandler;
 use Xpressengine\Support\Migration;
 use Xpressengine\Theme\ThemeHandler;
 use Xpressengine\User\Rating;
+use Xpressengine\Media\MediaManager;
+use Xpressengine\Storage\Storage;
 
 class MultisiteSettingsController extends BaseController
 {
@@ -37,15 +39,33 @@ class MultisiteSettingsController extends BaseController
     private $app;
 
     /**
-     * ManagerController constructor.
-     * * @param Application $app Application instance
+     * Storage instance
+     *
+     * @var Storage
      */
-    public function __construct(Application $app)
-    {
-//        XePresenter::setSettingsSkinTargetId('multisite');
-        $this->app = $app;
-        XeFrontend::css('plugins/multisite/assets/style.css')->load();
+    protected $storage;
 
+    /**
+     * MediaManager instance
+     *
+     * @var MediaManager
+     */
+    protected $media;
+
+    /**
+     * ManagerController constructor.
+     * *
+     * @param Application $app Application instance
+     * @param Storage $storage
+     * @param MediaManager $media
+     */
+    public function __construct(Application $app, Storage $storage, MediaManager $media)
+    {
+        $this->app = $app;
+        $this->storage = $storage;
+        $this->media = $media;
+
+        XeFrontend::css('plugins/multisite/assets/style.css')->load();
         XeFrontend::js('plugins/multisite/assets/amuz_common.js')->load();
     }
 
@@ -87,7 +107,7 @@ class MultisiteSettingsController extends BaseController
                 $infos[$keys[1]] = $val;
             }
         }
-        usort($infos, function($a, $b){
+        uasort($infos, function($a, $b){
             return $a['ordering'] - $b['ordering'];
         });
         return $infos;
@@ -127,10 +147,21 @@ class MultisiteSettingsController extends BaseController
         //arrange configs
         $infos = $this->getSiteInfos();
         $config_values = array();
-        foreach($infos as $info){
-            $config_values[$info['config_id']] = array();
-            foreach ($info['fields'] as $field) {
-                $config_values[$info['config_id']][$field['config_id']] = $request->get($field['config_id']);
+        foreach($infos as $parent_id => $info){
+            $config_values[$parent_id] = array();
+            foreach ($info['fields'] as $config_id => $field) {
+                if($request->file($config_id) !== null){
+                    $file = \XeStorage::upload($request->file($config_id), 'public/sites/'.$site_key.'/meta');
+                    $image = \XeMedia::make($file);
+                    $this->storage->unBindAll($site_key . "." . $config_id, true);
+                    $this->storage->bind($site_key . "." . $config_id, $image);
+                    $config_values[$parent_id][$config_id] = $image->getKey();
+                }else if($request->get($config_id) === '__delete_file__') {
+                    $this->storage->unBindAll($site_key . "." . $config_id, true);
+                }else{
+                    //text
+                    $config_values[$parent_id][$config_id] = $request->get($config_id);
+                }
             }
         }
 

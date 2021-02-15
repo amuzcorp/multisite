@@ -43,6 +43,10 @@ class Site extends XeSite
         return $this->hasMany('Amuz\XePlugin\Multisite\Models\SiteConfig','site_key')->where('name','seo');
     }
 
+    public function configMeta(){
+        return $this->hasMany('Amuz\XePlugin\Multisite\Models\SiteConfig','site_key')->where('name','like','site_meta.%');
+    }
+
     public function FeaturedDomain()
     {
         return $this->Domains()->where('is_featured','=','Y');

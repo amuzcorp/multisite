@@ -9,12 +9,17 @@ use XeSite;
 
 use Amuz\XePlugin\Multisite\Components\Modules\SiteList\SiteListModule;
 
+use Amuz\XePlugin\Multisite\Resources;
 use Amuz\XePlugin\Multisite\Models\Site;
 use Amuz\XePlugin\Multisite\Observers\SiteObserver;
 use Amuz\XePlugin\Multisite\Migrations\SitesMigration;
 
 class Plugin extends AbstractPlugin
 {
+    public function register()
+    {
+        Resources::setSiteInfo();
+    }
     /**
      * 이 메소드는 활성화(activate) 된 플러그인이 부트될 때 항상 실행됩니다.
      *

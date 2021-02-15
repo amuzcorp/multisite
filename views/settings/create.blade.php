@@ -52,7 +52,10 @@
                             <label>설치된 익스텐션</label> <small>이 사이트에서 활성화 할 익스텐션을 선택합니다.</small>
                             <div class="row">
                                 @php
-                                    $need_plugins = ['board','comment','widget_page','page','ckeditor'];
+                                    $need_plugins = [
+                                        'board','comment','widget_page','page','ckeditor'
+                                        ,'dynamic_factory','dynamic_field_extend'
+                                        ];
                                 @endphp
                                 @foreach(app('xe.plugin')->getPlugins() as $item)
                                     @if($item->getId() == 'multisite') @continue @endif

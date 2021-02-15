@@ -7,10 +7,10 @@
             </div>
         </div>
         <div class="panel-collapse collapse in">
-            <form method="post" id="f-editor-setting" action="{{ route('settings.multisite.update', ['site_key' => $site_key]) }}">
+            <form method="post" enctype="multipart/form-data" id="f-editor-setting" action="{{ route('settings.multisite.update', ['site_key' => $site_key]) }}">
                 {{ csrf_field() }}
                 <div class="panel-body">
-                    @foreach($infos as $info)
+                    @foreach($infos as $config_parent => $info)
                         @if($info['display'] !== true) @continue @endif
                         <div class="panel">
                             <div class="panel-heading">
@@ -26,8 +26,12 @@
                                         <div class="{{ isset($field["size"]) ? $field["size"] : "col-sm-6" }}">
                                             <div class="form-group">
                                                 @php
-                                                    if($Site->meta->get($config_id) ==! null){
-                                                        $field['uio']['value'] = $Site->meta->get($config_id);
+                                                    if(isset($Site->meta[$config_parent])){
+                                                        if($field['_type'] == 'formImage' && $Site->meta[$config_parent]->get($config_id) !== null){
+                                                            $field['uio']['value'] = ['path' => \Xpressengine\Media\Models\Image::find($Site->meta[$config_parent]->get($config_id))->url() ];
+                                                        }else{
+                                                            $field['uio']['value'] = $Site->meta[$config_parent]->get($config_id);
+                                                        }
                                                     }
                                                 @endphp
                                                 {{ uio($field['_type'],$field["uio"]) }}
