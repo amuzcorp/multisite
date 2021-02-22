@@ -26,11 +26,13 @@
                                         <div class="{{ isset($field["size"]) ? $field["size"] : "col-sm-6" }}">
                                             <div class="form-group">
                                                 @php
-                                                    if(isset($Site->meta[$config_parent])){
-                                                        if($field['_type'] == 'formImage' && $Site->meta[$config_parent]->get($config_id) !== null){
-                                                            $field['uio']['value'] = ['path' => \Xpressengine\Media\Models\Image::find($Site->meta[$config_parent]->get($config_id))->url() ];
-                                                        }else{
-                                                            $field['uio']['value'] = $Site->meta[$config_parent]->get($config_id);
+                                                    if(isset($Site->meta[$config_parent])) {
+                                                        if(array_get($Site->meta, $config_parent.'.'.$config_id.'.value')){
+                                                            if($field['_type'] == 'formImage') {
+                                                                $field['uio']['value'] = ['path' => array_get($Site->meta, $config_parent.'.'.$config_id.'.value')];
+                                                            }else{
+                                                                $field['uio']['value'] = array_get($Site->meta, $config_parent.'.'.$config_id.'.value');
+                                                            }
                                                         }
                                                     }
                                                 @endphp
