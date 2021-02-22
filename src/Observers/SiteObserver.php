@@ -34,18 +34,18 @@ class SiteObserver
         //setting meta datas
         $infos = MultisiteSettingsController::getSiteInfos();
         $site_meta = $this->getSiteMeta($Site->site_key);
+
         $ori_meta = [];
         foreach($site_meta as $k => $v){
             $key = explode(".",$v->name);
             if(!isset($key[1])) continue;
-//            if($key[1] == 'main_img') dd($v);
             $ori_meta[$key[1]] = $v;
         }
         if(is_array($infos) && count($infos) > 0){
             foreach($infos as $parent_key => $info){
                 $meta[$parent_key] = array();
                 foreach($info['fields'] as $children_key => $field){
-                    if($ori_meta[$parent_key]->get($children_key) != null) {
+                    if(array_get($ori_meta, $parent_key) != null && array_get($ori_meta, $parent_key)->get($children_key) != null) {
                         if ($field['_type'] == 'formImage') {
 //                            $field['value'] = $ori_meta[$parent_key]->get($children_key);
                             $field['value'] = MediaImage::find($ori_meta[$parent_key]->get($children_key))->url();
