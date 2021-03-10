@@ -186,8 +186,9 @@ class MultisiteSettingsController extends BaseController
         $title = xe_trans('multisite::multisite');
 
         $defaultSite = Site::find('default');
+        $infos = $this->getSiteInfos();
 
-        return XePresenter::make('multisite::views.settings.create', compact('title','Site','defaultSite'));
+        return XePresenter::make('multisite::views.settings.create', compact('title','Site','defaultSite','infos'));
     }
 
     public function store(Request $request){
@@ -234,6 +235,7 @@ class MultisiteSettingsController extends BaseController
             //parent configs 설정
             \DB::table('config')->insert([
                 ['site_key' => 'default', 'name' => 'site.' . $site_key , 'vars' => '[]'],
+                ['name' => 'site_meta', 'vars' => '[]', 'site_key' => $site_key]
             ]);
 
             //코어 마이그레이션 실행
@@ -297,6 +299,33 @@ class MultisiteSettingsController extends BaseController
 
 
             $this->app['xe.site']->setCurrentSite($defaultSite);
+
+            //arrange meta infos
+            $infos = $this->getSiteInfos();
+            $config_values = array();
+            foreach($infos as $parent_id => $info){
+                $config_values[$parent_id] = array();
+                foreach ($info['fields'] as $config_id => $field) {
+                    if($request->file($config_id) !== null){
+                        $file = \XeStorage::upload($request->file($config_id), 'public/sites/'.$site_key.'/meta');
+                        $image = \XeMedia::make($file);
+                        $this->storage->unBindAll($site_key . "." . $config_id, true);
+                        $this->storage->bind($site_key . "." . $config_id, $image);
+                        $config_values[$parent_id][$config_id] = $image->getKey();
+                    }else if($request->get($config_id) === '__delete_file__') {
+                        $this->storage->unBindAll($site_key . "." . $config_id, true);
+                    }else{
+                        //text
+                        $config_values[$parent_id][$config_id] = $request->get($config_id);
+                    }
+                }
+            }
+
+            //set metainfos
+            foreach ($config_values as $key => $value) {
+                app('xe.config')->set('site_meta.' . $key, $value, false, null, $site_key);
+            }
+
         } catch (\Exception $e) {
             XeDB::rollback();
             throw $e;

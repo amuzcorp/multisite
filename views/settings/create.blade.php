@@ -38,6 +38,14 @@
                                 {!! uio('langText', ['name'=>'site_title']) !!}
                             </div>
                         </div>
+
+                        <div class="panel">
+                            <div class="panel-heading">
+                                <div class="pull-left">
+                                    <h3 class="panel-title">메타정보 설정</h3>
+                                </div>
+                            </div>
+                        @include("multisite::views.settings.edit.default_infos")
                     </div>
 
                     <div class="panel">
