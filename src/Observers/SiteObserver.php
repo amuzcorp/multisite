@@ -47,8 +47,10 @@ class SiteObserver
                 foreach($info['fields'] as $children_key => $field){
                     if(array_get($ori_meta, $parent_key) != null && array_get($ori_meta, $parent_key)->get($children_key) != null) {
                         if ($field['_type'] == 'formImage') {
-//                            $field['value'] = $ori_meta[$parent_key]->get($children_key);
-                            $field['value'] = MediaImage::find($ori_meta[$parent_key]->get($children_key))->url();
+                            if(MediaImage::find($ori_meta[$parent_key]->get($children_key)) != null) {
+//                                $field['value'] = $ori_meta[$parent_key]->get($children_key);
+                                $field['value'] = MediaImage::find($ori_meta[$parent_key]->get($children_key))->url();
+                            }
                         } else {
                             $field['value'] = $ori_meta[$parent_key]->get($children_key);
                         }
