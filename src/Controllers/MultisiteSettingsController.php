@@ -241,6 +241,9 @@ class MultisiteSettingsController extends BaseController
             //코어 마이그레이션 실행
             $this->runMigrations($site_key);
 
+            //회원그룹 생성, 가입설정만들기
+            $this->runRegister($site_key);
+
             //사이트 테마설정
             // set site default theme
             $theme = ['desktop' => $request->get('theme_desktop'), 'mobile' => $request->get('theme_mobile')];
@@ -376,6 +379,31 @@ class MultisiteSettingsController extends BaseController
         return redirect()->route('settings.multisite.index')->with('alert', [
             'type' => 'success', 'message' => xe_trans('multisite::deletedNewSite')
         ]);
+    }
+
+    public function runRegister($site_key = 'default'){
+        $registerConfig = app('xe.config')->get('user.register');
+        // add default user groups
+        $joinGroup = app('xe.user')->groups()->create(
+            [
+                'name' => '기본 회원',
+                'description' => 'Default Group In Multisite ['.$site_key.']'
+            ]
+        );
+        $registerConfig->set('joinGroup', $joinGroup->id);
+
+        $displayNameCaption = XeLang::genUserKey();
+        foreach (XeLang::getLocales() as $locale) {
+            $value = "닉네임";
+            if ($locale != 'ko') {
+                $value = "Nickname";
+            }
+            XeLang::save($displayNameCaption, $locale, $value);
+        }
+        $registerConfig->set('display_name_caption', $displayNameCaption);
+        app('xe.config')->modify($registerConfig);
+        // 생성자를 관리자로 추가
+        auth()->user()->joinGroups($joinGroup);
     }
 
     public function runMigrations($site_key){

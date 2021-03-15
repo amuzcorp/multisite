@@ -62,11 +62,10 @@
                                 @php
                                     $need_plugins = [
                                         'board','comment','widget_page','page','ckeditor'
-                                        ,'dynamic_factory','dynamic_field_extend'
+                                        ,'dynamic_factory','dynamic_field_extend','multisite'
                                         ];
                                 @endphp
                                 @foreach(app('xe.plugin')->getPlugins() as $item)
-                                    @if($item->getId() == 'multisite') @continue @endif
                                     <div class="col-sm-6">
                                         <div class="input-group">
                                             <div class="checkbox card-wrap">

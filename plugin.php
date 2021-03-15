@@ -1,11 +1,13 @@
 <?php
 namespace Amuz\XePlugin\Multisite;
 
+use Illuminate\Database\Schema\Blueprint;
 use Route;
 use Xpressengine\Plugin\AbstractPlugin;
 use Xpressengine\Translation\Translator;
 use XeRegister;
 use XeSite;
+use Schema;
 
 use Amuz\XePlugin\Multisite\Components\Modules\SiteList\SiteListModule;
 
@@ -202,7 +204,6 @@ class Plugin extends AbstractPlugin
      */
     public function update()
     {
-        // implement code
     }
 
     /**
@@ -213,8 +214,11 @@ class Plugin extends AbstractPlugin
      */
     public function checkUpdated()
     {
-        // implement code
-        return parent::checkUpdated();
+        $isLatest = true;
+
+        if (parent::checkUpdated() == false) return false;
+
+        return $isLatest;
     }
 
 
