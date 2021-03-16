@@ -29,6 +29,12 @@ class Site extends XeSite
         $this->attributes = $attributes;
     }
 
+    public function getStatus(){
+        if($this->status == 'deactivated') return xe_trans('xe::deactive');
+//        if($this->status == 'activated')
+        return xe_trans('xe::active');
+    }
+
     public function Domains()
     {
         return $this->hasMany('Amuz\XePlugin\Multisite\Models\SiteDomain','site_key')->orderBy('is_featured','DESC')->orderBy('is_ssl','DESC')->orderBy('is_redirect_to_featured','DESC');

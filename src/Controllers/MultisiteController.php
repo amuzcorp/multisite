@@ -35,14 +35,16 @@ class MultisiteController extends BaseController
         $filter_target = $request->get('target');
         $filter_value = $request->get('filter');
 
+        //get keyword translations
         $keyword = $request->get('query');
-
         $translations = \DB::table('translation')->where('namespace','user')->where('locale',\XeLang::getLocale())->where('value','like','%'.$keyword.'%')->pluck('item');
 
+        //activated site & use_list
         \DB::enableQueryLog(); // Enable query log
         $collection = Site::whereDoesntHave('configMeta', function($query){
             $query->where('vars','like','%"use_list":"N"%');
-        });
+        })->where('status','activated');
+
         //set filter
         if($filter_target !== null && $filter_value !== null){
             $collection->whereHas('configMeta', function($query) use($filter_target,$filter_value){

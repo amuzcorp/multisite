@@ -204,6 +204,7 @@ class Plugin extends AbstractPlugin
      */
     public function update()
     {
+        //site 테이블에 타임스탬프 추가
         if(Schema::hasColumn('site', 'created_at') == false) {
             Schema::table('site', function (Blueprint $table) {
                 $table->timestamp('created_at')->default(\DB::raw('CURRENT_TIMESTAMP'))->nullable()->comment('site created date');
@@ -211,6 +212,14 @@ class Plugin extends AbstractPlugin
 
                 $table->index('created_at');
                 $table->index('updated_at');
+            });
+        }
+
+        //site 상태 추가
+        if(Schema::hasColumn('site', 'status') == false) {
+            Schema::table('site', function (Blueprint $table) {
+                $table->string('status', 20)->default('activated')->comment('site status. activated/deactivated');
+                $table->index('status');
             });
         }
     }
@@ -227,6 +236,7 @@ class Plugin extends AbstractPlugin
 
         if (parent::checkUpdated() == false) return false;
         if(Schema::hasColumn('site', 'created_at') == false) return false;
+        if(Schema::hasColumn('site', 'status') == false) return false;
 
         return $isLatest;
     }

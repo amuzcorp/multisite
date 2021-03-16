@@ -75,17 +75,41 @@ class MultisiteSettingsController extends BaseController
 
         // set browser title
         XeFrontend::title($title);
+        $list_count = $request->get('list_count') ? $request->get('list_count') : 10;
 
+        //get keyword translations
         $keyword = $request->get('query');
-        $Sites = Site::whereHas('domains', function ($query) use ($keyword){
-            $query->where('domain','like','%'.$keyword.'%');
-        })->orWhereHas('configSEO', function($query) use ($keyword){
-            $query->where('vars','like','%'.$keyword.'%');
-        })->get();
+        $translations = \DB::table('translation')->where('namespace','user')->where('locale',\XeLang::getLocale())->where('value','like','%'.$keyword.'%')->pluck('item');
+
+        //activated site & use_list
+        \DB::enableQueryLog(); // Enable query log
+
+        $status_list = ['activated','deactivated'];
+        $collection = Site::OrderBy('created_at','desc');
+
+        if(in_array($request->get('status'),$status_list)){
+            $collection = $collection->where('status',$request->get('status'));
+        }
+
+        //set search keyword
+        $Sites = $collection->where(function($q) use ($keyword, $translations){
+            $q->whereHas('domains', function ($query) use ($keyword){
+                $query->where('domain','like','%'.$keyword.'%');
+            })->orWhereHas('configSEO', function($query) use ($keyword,$translations){
+                $toJson = str_replace('"','',json_enc($keyword,1,-1));
+                $escapeBackSlash = str_replace('\\','%',$toJson);
+                $query->where('vars','like','%'.$escapeBackSlash.'%');
+                foreach($translations as $key => $item){
+                    $query->orWhere('vars','like','%'.$item.'%');
+                }
+            });
+        })->paginate($list_count);
+//        dd(\DB::getQueryLog()); // Show results of log
 
         return XePresenter::make('multisite::views.settings.index', [
             'title' => $title,
             'Sites' => $Sites,
+            'list_count' => $list_count,
             'keyword' => $keyword
         ]);
     }

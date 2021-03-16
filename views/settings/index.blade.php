@@ -8,7 +8,7 @@
 
 <div class="container-fluid container-fluid--part">
     <div class="row">
-        <form method="get" action="">
+        <form id="search_form" method="get" action="">
             <input type="hidden" name="status" value="{{\Request::get('status')}}">
 
             <div class="col-sm-12">
@@ -29,19 +29,11 @@
                 <div class="panel-group">
                     <div class="panel">
                         <div class="panel-heading">
-                            <div class="pull-right">
+                            <div class="pull-right" style="padding-left:10px;">
                                 <div class="search-btn-group">
                                     <a href="{{ route('settings.multisite.create') }}" class="xe-btn xe-btn-install">
                                         <i class="xi-plus"></i>{{ xe_trans('xe::site') }} {{ xe_trans('xe::create') }}
                                     </a>
-{{--                                    <button class="xe-btn">업데이트 목록</button>--}}
-                                </div>
-                            </div>
-                            <div class="pull-left">
-                                <div class="btn-group">
-                                    <button class="btn btn-default __xe_check_all">{{ xe_trans('xe::selectAll') }}</button>
-                                </div>
-                                <div class="btn-group __xe_controll_btn">
                                 </div>
                             </div>
 
@@ -55,11 +47,26 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="pull-right">
+{{--                            셀렉트 있던 자리--}}
+                            </div>
+                            <div class="pull-left">
+                                <select name="list_count" class="form-control" onchange="jQuery('#search_form').submit();">
+                                    @foreach([5,10,15,30,50,100] as $num)
+                                        <option value="{{ $num }}" {!! $num == $list_count ? 'selected="selected"' : '' !!}>{{ $num }}개씩 보기</option>
+                                    @endforeach
+                                </select>
+{{--                                <div class="btn-group">--}}
+{{--                                    <button class="btn btn-default __xe_check_all">{{ xe_trans('xe::selectAll') }}</button>--}}
+{{--                                </div>--}}
+{{--                                <div class="btn-group __xe_controll_btn">--}}
+{{--                                </div>--}}
+                            </div>
                         </div>
 
                         <ul class="list-group list-plugin">
                             @foreach ($Sites as $Site)
-                                <li class="list-group-item">
+                                <li class="list-group-item {{ ($Site->status == 'deactivated') ? 'off' : '' }}">
                                     <div class="list-group-item-checkbox">
                                         <label class="xe-label">
                                             <input type="checkbox" value="{{ $Site->site_key }}" class="__xe_checkbox">
@@ -73,6 +80,12 @@
                                             <span class="icon-wrap" style="background-image:url('{{ $Site->config->get('favicon.path') ? $Site->config->get('favicon.path') : '/assets/core/settings/img/logo.png' }}');"></span>
                                             {{ xe_trans($Site->config->get('site_title')) }}
                                         </span>
+                                        <dl>
+                                            <dt class="sr-only">생성일</dt>
+                                            <dd>{!! $Site->created_at->format('Y-m-d H:i') !!}</dd>
+                                            <dt class="sr-only">상태</dt>
+                                            <dd class="{{ $Site->status == 'activated' ? 'text-info' : 'text-warning' }}">{!! $Site->getStatus() !!}</dd>
+                                        </dl>
                                         <dl>
                                             <dt class="sr-only">Front Link</dt>
                                             <dd>{!! $Site->getDomainLink('방문') !!}</dd>
@@ -98,6 +111,9 @@
                         </ul>
                     </div>
                 </div>
+
+
+                {{ $Sites->appends(['status' => Request::get('status'), 'query' => Request::get('query'), 'list_count' => $list_count])->links() }}
             </div>
         </form>
     </div>
