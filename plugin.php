@@ -204,6 +204,15 @@ class Plugin extends AbstractPlugin
      */
     public function update()
     {
+        if(Schema::hasColumn('site', 'created_at') == false) {
+            Schema::table('site', function (Blueprint $table) {
+                $table->timestamp('created_at')->default(\DB::raw('CURRENT_TIMESTAMP'))->nullable()->comment('site created date');
+                $table->timestamp('updated_at')->default(\DB::raw('CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP'))->nullable()->comment('site updated date');
+
+                $table->index('created_at');
+                $table->index('updated_at');
+            });
+        }
     }
 
     /**
@@ -217,6 +226,7 @@ class Plugin extends AbstractPlugin
         $isLatest = true;
 
         if (parent::checkUpdated() == false) return false;
+        if(Schema::hasColumn('site', 'created_at') == false) return false;
 
         return $isLatest;
     }
