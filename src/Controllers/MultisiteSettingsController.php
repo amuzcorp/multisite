@@ -410,7 +410,7 @@ class MultisiteSettingsController extends BaseController
         // add default user groups
         $joinGroup = app('xe.user')->groups()->create(
             [
-                'name' => '기본 회원',
+                'name' => $site_key . ' 사이트의 기본 회원',
                 'description' => 'Default Group In Multisite ['.$site_key.']'
             ]
         );

@@ -42,7 +42,7 @@ class Plugin extends AbstractPlugin
             $this->registerSettingsRoute();
         }else{
             //remove default admin menu
-            \XeRegister::push('settings/menu','extension',['display'=>false]);
+//            \XeRegister::push('settings/menu','extension',['display'=>false]);
         }
     }
 
@@ -86,10 +86,10 @@ class Plugin extends AbstractPlugin
      */
     private function registerSettingsMenus(){
         \XeRegister::push('settings/menu', 'sites', [
-            'title' => '사이트 관리',
+            'title' => '멀티사이트',
             'description' => '사이트를 생성하고 관리합니다.',
             'display' => true,
-            'ordering' => 200
+            'ordering' => 8000
         ]);
         \XeRegister::push('settings/menu', 'sites.index', [
             'title' => '사이트 목록',
