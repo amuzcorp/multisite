@@ -160,7 +160,7 @@ class MultisiteSettingsController extends BaseController
         return $this->edit($site_key, $mode);
     }
 
-    public function edit($site_key, $mode = null){
+    public function edit($site_key, $mode = 'meta'){
         $title = xe_trans('multisite::multisite');
 
         $Site = Site::find($site_key);
