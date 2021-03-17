@@ -434,7 +434,6 @@ class MultisiteSettingsController extends BaseController
 
             \XeDB::table('widgetbox')->where('site_key',$args['site_key'])->delete();
             \XeDB::table('user_group')->where('site_key',$args['site_key'])->delete();
-            \XeDB::table('user_group_user')->where('site_key',$args['site_key'])->delete();
             \XeDB::table('terms')->where('site_key',$args['site_key'])->delete();
             \XeDB::table('term_agrees')->where('site_key',$args['site_key'])->delete();
             \XeDB::table('config')->where('site_key',$args['site_key'])->delete();
