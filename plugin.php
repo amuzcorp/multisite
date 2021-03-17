@@ -264,6 +264,18 @@ class Plugin extends AbstractPlugin
                 $table->index('status');
             });
         }
+        if(Schema::hasColumn('user_terms', 'site_key') == false) {
+            Schema::table('user_terms', function (Blueprint $table) {
+                $table->string('site_key', 50)->nullable()->default('default')->comment('site key. for multi web site support.');
+                $table->index('site_key');
+            });
+        }
+        if(Schema::hasColumn('user_term_agrees', 'site_key') == false) {
+            Schema::table('user_term_agrees', function (Blueprint $table) {
+                $table->string('site_key', 50)->nullable()->default('default')->comment('site key. for multi web site support.');
+                $table->index('site_key');
+            });
+        }
     }
 
     /**
@@ -279,6 +291,8 @@ class Plugin extends AbstractPlugin
         if (parent::checkUpdated() == false) return false;
         if(Schema::hasColumn('site', 'created_at') == false) return false;
         if(Schema::hasColumn('site', 'status') == false) return false;
+        if(Schema::hasColumn('user_terms', 'site_key') == false) return false;
+        if(Schema::hasColumn('user_term_agrees', 'site_key') == false) return false;
 
         return $isLatest;
     }
