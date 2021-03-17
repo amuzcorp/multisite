@@ -92,7 +92,7 @@ class MultisiteSettingsController extends BaseController
         }
 
         //set search keyword
-        $Sites = $collection->where(function($q) use ($keyword, $translations){
+        $collection = $collection->where(function($q) use ($keyword, $translations){
             $q->whereHas('domains', function ($query) use ($keyword){
                 $query->where('domain','like','%'.$keyword.'%');
             })->orWhereHas('configSEO', function($query) use ($keyword,$translations){
@@ -103,7 +103,25 @@ class MultisiteSettingsController extends BaseController
                     $query->orWhere('vars','like','%'.$item.'%');
                 }
             });
-        })->paginate($list_count);
+        });
+
+        //번역으로 해당사이트이름을 가진사이트의 id가 있으면 받아두고, 최종 where절에 or로 붙여서 해결. ㅡㅡ
+        if(count($translations) > 0) {
+            $has_keyword_sites = \DB::table('config')->where('site_key', 'default')->where('name', 'like', 'site.%')->Where(function ($query) use ($translations) {
+                foreach ($translations as $translation_item) {
+                    $query->orwhere('vars', 'like', '%user::' . $translation_item . '%');
+                }
+            })->get()->pluck('name');
+            foreach($has_keyword_sites as $key => $val) $has_keyword_sites[$key] = explode(".",$val)[1];
+
+            if(count($has_keyword_sites) > 0){
+                $collection = $collection->orWhere(function ($query) use ($has_keyword_sites) {
+                    $query->whereIn('site_key', $has_keyword_sites);
+                });
+            }
+        }
+
+        $Sites = $collection->paginate($list_count);
 //        dd(\DB::getQueryLog()); // Show results of log
 
         return XePresenter::make('multisite::views.settings.index', [
@@ -135,6 +153,11 @@ class MultisiteSettingsController extends BaseController
             return $a['ordering'] - $b['ordering'];
         });
         return $infos;
+    }
+
+    public function mysite($mode = null){
+        $site_key = \XeSite::getCurrentSiteKey();
+        return $this->edit($site_key, $mode);
     }
 
     public function edit($site_key, $mode = null){

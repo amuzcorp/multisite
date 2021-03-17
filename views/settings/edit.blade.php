@@ -9,6 +9,9 @@
 @include('multisite::views.settings.edit._tab', ['_active' => $mode, 'site_key' => $site_key])
 
 @switch($mode)
+    @case('meta')
+        @include('multisite::views.settings.edit.meta', compact('site_key', 'Site', 'defaultSite'))
+    @break
     @case('domains')
         @include('multisite::views.settings.edit.domains', compact('site_key', 'Site', 'defaultSite'))
     @break
