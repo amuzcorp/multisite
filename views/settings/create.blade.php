@@ -62,7 +62,7 @@
                                 @php
                                     $need_plugins = [
                                         'board','comment','widget_page','page','ckeditor'
-                                        ,'dynamic_factory','dynamic_field_extend','multisite','user_types'
+                                        ,'dynamic_factory','dynamic_field_extend','multisite','news_client'
                                         ];
                                 @endphp
                                 @foreach(app('xe.plugin')->getPlugins() as $item)

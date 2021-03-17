@@ -294,8 +294,7 @@ class MultisiteSettingsController extends BaseController
             \DB::table('permissions')->insert([
                 ['site_key' => $site_key, 'name' => 'module/board@board', 'grants' => '{"create":{"rating":"user","group":[],"user":[],"except":[]},"read":{"rating":"guest","group":[],"user":[],"except":[]},"list":{"rating":"guest","group":[],"user":[],"except":[]},"manage":{"rating":"manager","group":[],"user":[],"except":[]}}'],
                 ['site_key' => $site_key, 'name' => 'comment', 'grants' => '{"create":{"rating":"user","group":[],"user":[],"except":[],"vgroup":[]},"manage":{"rating":"manager","group":[],"user":[],"except":[],"vgroup":[]}}'],
-                ['site_key' => $site_key, 'name' => 'editor', 'grants' => '{"html":{"rating":"user","group":[],"user":[],"except":[],"vgroup":[]},"tool":{"rating":"user","group":[],"user":[],"except":[],"vgroup":[]},"upload":{"rating":"user","group":[],"user":[],"except":[],"vgroup":[]},"download":{"rating":"user","group":[],"user":[],"except":[],"vgroup":[]}}'],
-                ['site_key' => $site_key, 'name' => 'widgetbox', 'grants' => '[]'],
+                ['site_key' => $site_key, 'name' => 'editor', 'grants' => '{"html":{"rating":"user","group":[],"user":[],"except":[],"vgroup":[]},"tool":{"rating":"user","group":[],"user":[],"except":[],"vgroup":[]},"upload":{"rating":"user","group":[],"user":[],"except":[],"vgroup":[]},"download":{"rating":"user","group":[],"user":[],"except":[],"vgroup":[]}}']
             ]);
             //parent configs 설정
             \DB::table('config')->insert([
@@ -419,8 +418,10 @@ class MultisiteSettingsController extends BaseController
                     foreach($args['contents'] as $target_module => $on) $target_contents[] = $target_module;
                 }
 
-                //TODO - 이동처리 (일단 문서만)
+                //TODO - 이동처리 문서/CPT/첨부파일
                 //DB::table('instance_route')->whereIn('module',join($target_contents))->where('site_key',$args['site_key'])->update('site_key',$args['target_site_key']);
+
+                //TODO - 삭제처리 문서/CPT/첨부파일
             }
 
             //삭제시작
@@ -431,6 +432,11 @@ class MultisiteSettingsController extends BaseController
             \XeDB::table('permissions')->where('site_key',$args['site_key'])->delete();
             \XeDB::table('instance_route')->where('site_key',$args['site_key'])->delete();
 
+            \XeDB::table('widgetbox')->where('site_key',$args['site_key'])->delete();
+            \XeDB::table('user_group')->where('site_key',$args['site_key'])->delete();
+            \XeDB::table('user_group_user')->where('site_key',$args['site_key'])->delete();
+            \XeDB::table('terms')->where('site_key',$args['site_key'])->delete();
+            \XeDB::table('term_agrees')->where('site_key',$args['site_key'])->delete();
             \XeDB::table('config')->where('site_key',$args['site_key'])->delete();
             \XeDB::table('config')->where('name','site.'.$args['site_key'])->delete();
 
