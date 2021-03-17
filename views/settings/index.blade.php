@@ -3,7 +3,7 @@
 @stop
 
 @section('page_description')
-    <small>{{xe_trans('multisite::searchSitesCount') }}</small>
+    <small>{{xe_trans('multisite::searchSitesCount') }} : {{ $Sites->total() }}</small>
 @endsection
 
 <div class="container-fluid container-fluid--part">
