@@ -25,6 +25,7 @@ use Xpressengine\Plugins\Comment\Handler as commentHandler;
 use Xpressengine\Skin\SkinHandler;
 use Xpressengine\Support\Migration;
 use Xpressengine\Theme\ThemeHandler;
+use Xpressengine\User\Models\UserGroup;
 use Xpressengine\User\Rating;
 use Xpressengine\Media\MediaManager;
 use Xpressengine\Storage\Storage;
@@ -130,8 +131,8 @@ class MultisiteSettingsController extends BaseController
         /*
         if(count($Sites) > 0){
             foreach($Sites as $Site){
-                $registerConfig = app('xe.config')->get('user.register',false,$Site->site_key);
-                if($registerConfig->get('display_name_caption') == null){
+                $has_group = UserGroup::Where('site_key',$Site->site_key)->first();
+                if($has_group == null){
                     self::runRegister($Site->site_key);
                 }
             }
