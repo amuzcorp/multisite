@@ -289,7 +289,7 @@ class MultisiteSettingsController extends BaseController
             $this->runMigrations($site_key);
 
             //회원그룹 생성, 가입설정만들기
-            $this->runRegister($site_key);
+            self::runRegister($site_key);
 
             //사이트 테마설정
             // set site default theme
@@ -428,7 +428,7 @@ class MultisiteSettingsController extends BaseController
         ]);
     }
 
-    public function runRegister($site_key = 'default'){
+    public static function runRegister($site_key = 'default'){
         $registerConfig = app('xe.config')->get('user.register');
         // add default user groups
         $joinGroup = app('xe.user')->groups()->create(
