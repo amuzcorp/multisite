@@ -133,9 +133,12 @@ class MultisiteSettingsController extends BaseController
             foreach($Sites as $Site){
                 $has_group = UserGroup::Where('site_key',$Site->site_key)->first();
                 if($has_group == null){
-                    self::runRegister($Site->site_key);
+                    $this->app['xe.site']->setCurrentSite($Site);
+                    $this->runRegister($Site->site_key);
                 }
             }
+
+            $this->app['xe.site']->setCurrentSite(Site::find('default'));
         }
         */
 
@@ -304,7 +307,7 @@ class MultisiteSettingsController extends BaseController
             $this->runMigrations($site_key);
 
             //회원그룹 생성, 가입설정만들기
-            self::runRegister($site_key);
+            $this->runRegister($site_key);
 
             //사이트 테마설정
             // set site default theme
@@ -443,7 +446,7 @@ class MultisiteSettingsController extends BaseController
         ]);
     }
 
-    public static function runRegister($site_key = 'default'){
+    public function runRegister($site_key = 'default'){
         $registerConfig = app('xe.config')->get('user.register');
         // add default user groups
         $joinGroup = app('xe.user')->groups()->create(
