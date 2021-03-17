@@ -407,6 +407,9 @@ class MultisiteSettingsController extends BaseController
     public function destroy(Request $request){
         $args = $request->all();
 
+        if($args['site_key'] == 'default') return redirect()->route('settings.multisite.index')->with('alert', [
+            'type' => 'error', 'message' => '기본사이트는 삭제가 불가능합니다.'
+        ]);
 
         \XeDB::beginTransaction();
         try {
@@ -434,8 +437,8 @@ class MultisiteSettingsController extends BaseController
 
             \XeDB::table('widgetbox')->where('site_key',$args['site_key'])->delete();
             \XeDB::table('user_group')->where('site_key',$args['site_key'])->delete();
-            \XeDB::table('terms')->where('site_key',$args['site_key'])->delete();
-            \XeDB::table('term_agrees')->where('site_key',$args['site_key'])->delete();
+            \XeDB::table('user_terms')->where('site_key',$args['site_key'])->delete();
+            \XeDB::table('user_term_agrees')->where('site_key',$args['site_key'])->delete();
             \XeDB::table('config')->where('site_key',$args['site_key'])->delete();
             \XeDB::table('config')->where('name','site.'.$args['site_key'])->delete();
 
