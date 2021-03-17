@@ -124,6 +124,20 @@ class MultisiteSettingsController extends BaseController
         $Sites = $collection->paginate($list_count);
 //        dd(\DB::getQueryLog()); // Show results of log
 
+        //사이트설정들이 완전하지 않아서 추가로발견되면 계속적으로 추가해줘야함.
+        //최종 쿼리결과에 픽스할 사항이있으면 여기에 조금씩 추가.
+        //기본적으로 주석처리하고, 필요할때 풀어서 사용 권장
+        /*
+        if(count($Sites) > 0){
+            foreach($Sites as $Site){
+                $registerConfig = app('xe.config')->get('user.register',false,$Site->site_key);
+                if($registerConfig->get('display_name_caption') == null){
+                    self::runRegister($Site->site_key);
+                }
+            }
+        }
+        */
+
         return XePresenter::make('multisite::views.settings.index', [
             'title' => $title,
             'Sites' => $Sites,
