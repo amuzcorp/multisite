@@ -2,6 +2,8 @@
 
 namespace Amuz\XePlugin\Multisite\Models;
 use Xpressengine\Database\Eloquent\DynamicModel;
+use Xpressengine\Menu\Models\MenuItem;
+use Xpressengine\Routing\InstanceRoute;
 
 class SiteDomain extends DynamicModel
 {
@@ -48,5 +50,26 @@ class SiteDomain extends DynamicModel
 
     public function Site(){
         return $this->belongsTo('Amuz\XePlugin\Multisite\Models\Site','site_key');
+    }
+
+
+    /**
+     * Instance route relationship
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\hasOne
+     */
+    public function InstanceRoute()
+    {
+        return $this->hasOne(InstanceRoute::class, 'instance_id', 'index_instance');
+    }
+
+    /**
+     * Aggregator relationship
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\hasOne
+     */
+    public function MenuItem()
+    {
+        return $this->hasOne(MenuItem::class,'id','index_instance');
     }
 }

@@ -1,9 +1,11 @@
 <?php
 namespace Amuz\XePlugin\Multisite;
 
+use Amuz\XePlugin\Multisite\Models\SiteDomain;
 use Illuminate\Database\Schema\Blueprint;
 use Route;
 use Xpressengine\Plugin\AbstractPlugin;
+use Xpressengine\Site\SiteHandler;
 use Xpressengine\Translation\Translator;
 use XeRegister;
 use XeSite;
@@ -20,6 +22,10 @@ class Plugin extends AbstractPlugin
 {
     public function register()
     {
+        //정상적인 사이트정보인지 먼저 체크
+        $this->setSiteDomainInfo();
+
+        //관리자메뉴 등 등록
         Resources::setSiteInfo();
     }
     /**
@@ -29,6 +35,7 @@ class Plugin extends AbstractPlugin
      */
     public function boot()
     {
+
         Site::observe(SiteObserver::class);
 
         $this->putLang(); //요건나중에 update로 옮길것
@@ -50,6 +57,55 @@ class Plugin extends AbstractPlugin
         /** @var Translator $trans */
         $trans = app('xe.translator');
         $trans->putFromLangDataSource('multisite', base_path('plugins/multisite/langs/lang.php'));
+    }
+
+    public function setSiteDomainInfo(){
+        $request = request();
+        $current_domain = $request->getHttpHost();
+        $current_path = $request->getRequestUri();
+
+        //등록안된 도메인이면 404 띄움.
+        $domain = SiteDomain::find($current_domain);
+        if(is_null($domain)) abort(404);
+
+        //같은사이트의 대표도메인을 가져옴
+        $featured_domain = SiteDomain::where('is_featured','Y')->where('site_key',$domain->site_key)->first();
+        $featured_domain_scheme = $featured_domain->is_ssl == "Y" ? 'https://' : 'http://';
+
+        //대표 도메인이 아닌데, 주요 도메인으로 리다이렉트가 걸려있는 경우
+        if($domain->is_featured != "Y" && $domain->is_redirect_to_featured == "Y"){
+            $redirect_to = $featured_domain_scheme.$featured_domain->domain.$current_path;
+            header("Location: ".$redirect_to);
+            exit();
+        }
+
+        //scheme set
+        $scheme = $domain->is_ssl == "Y" ? 'https://' : 'http://';
+        $cur_scheme = $request->isSecure() ?  'https://' : 'http://';
+
+        //현재 접속한 도메인의 스키마가 맞지 않는경우
+        //CORS에서 로드밸런서의 https여부를 검증해주므로 여기선 안함
+        if($scheme != $cur_scheme){
+            $redirect_to = $scheme.$domain->domain.$current_path;
+            header("Location: ".$redirect_to);
+            exit();
+        }
+
+        //대표도메인이 아닌경우 home instance 변경해서 호출
+        if($domain->is_featured != "Y" && $domain->index_instance != null){
+            intercept(
+                SiteHandler::class . '@getHomeInstanceId',
+                'multisite::replaceHomeInstance',
+                function ($func, $siteKey = null) use ($domain){
+                    return $domain->index_instance;
+                }
+            );
+        }
+
+        //접속한 도메인의 사이트키로 새 사이트모델을 세팅 하고 끝냄
+        $curSite = Site::find($domain->site_key);
+        $site_handler = app('xe.site');
+        $site_handler->setCurrentSite($curSite);
     }
 
     /**
@@ -143,14 +199,27 @@ class Plugin extends AbstractPlugin
               'settings_menu' => 'sitemap.site'
           ]);
 
+          Route::get('/edit/{site_key}/{mode?}', [
+              'as' => 'settings.multisite.edit',
+              'uses' => 'MultisiteSettingsController@edit',
+          ]);
+
           Route::post('/update/{site_key}', [
               'as' => 'settings.multisite.update',
               'uses' => 'MultisiteSettingsController@update',
           ]);
 
-          Route::get('/edit/{site_key}/{mode?}', [
-              'as' => 'settings.multisite.edit',
-              'uses' => 'MultisiteSettingsController@edit',
+          Route::post('/createDomain/{site_key}/{domain?}', [
+              'as' => 'settings.multisite.create.domain',
+              'uses' => 'MultisiteSettingsController@createDomain',
+          ]);
+          Route::delete('/deleteDomain/{site_key}', [
+              'as' => 'settings.multisite.delete.domain',
+              'uses' => 'MultisiteSettingsController@deleteDomain',
+          ]);
+          Route::post('/updateDefaultDomain/{site_key}', [
+              'as' => 'settings.multisite.update.domain.default',
+              'uses' => 'MultisiteSettingsController@updateDefaultDomain',
           ]);
       },['namespace' => 'Amuz\XePlugin\Multisite\Controllers']);
     }

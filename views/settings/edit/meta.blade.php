@@ -9,7 +9,7 @@
         <div class="panel-collapse collapse in">
             <form method="post" enctype="multipart/form-data" id="f-editor-setting" action="{{ route('settings.multisite.update', ['site_key' => $site_key]) }}">
                 {{ csrf_field() }}
-                @include("multisite::views.settings.edit.default_infos")
+                @include("multisite::views.settings.edit.default_infos",['infos' => $output['infos']])
                 <div class="panel-footer">
                     <div class="pull-right">
                         <button type="submit" class="btn btn-primary">{{ xe_trans('xe::save') }}</button>

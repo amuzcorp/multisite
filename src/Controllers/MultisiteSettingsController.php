@@ -25,10 +25,10 @@ use Xpressengine\Plugins\Comment\Handler as commentHandler;
 use Xpressengine\Skin\SkinHandler;
 use Xpressengine\Support\Migration;
 use Xpressengine\Theme\ThemeHandler;
-use Xpressengine\User\Models\UserGroup;
 use Xpressengine\User\Rating;
 use Xpressengine\Media\MediaManager;
 use Xpressengine\Storage\Storage;
+use Xpressengine\Routing\InstanceRoute;
 
 class MultisiteSettingsController extends BaseController
 {
@@ -175,23 +175,90 @@ class MultisiteSettingsController extends BaseController
 
     public function mysite($mode = null){
         $site_key = \XeSite::getCurrentSiteKey();
-        return $this->edit($site_key, $mode);
+        return $this->edit($site_key, $mode, 'settings.multisite.mysite');
     }
 
-    public function edit($site_key, $mode = 'meta'){
+    public function edit($site_key, $mode = 'meta', $target_route = 'settings.multisite.edit'){
         $title = xe_trans('multisite::multisite');
 
         $Site = Site::find($site_key);
         if($Site == null){
-            return redirect()->route('settings.multisite.index')->with('alert', [
+            return redirect()->route($target_route)->with('alert', [
                     'type' => 'failed', 'message' => xe_trans('multisite::siteHostNoneExists')]
             );
         }
 
-        $infos = $this->getSiteInfos();
+        //for domain
+        $output = [];
+        switch($mode){
+            case 'meta' :
+                $output['infos'] = $this->getSiteInfos();
+                break;
+            case 'domains' :
+                $output['domains'] = SiteDomain::where('site_key',$site_key)->orderBy('is_featured','DESC')->get();
+                $instances = InstanceRoute::where('site_key',$site_key)->get();
+                $output['menu_instances'] = [];
+                foreach($instances as $instance)
+                    $output['menu_instances'][$instance->instance_id] = $instance->MenuItem->getLinkAttribute();
+
+                if(\Request::get('target_domain')){
+                    $output['domain'] = SiteDomain::find(\Request::get('target_domain'));
+                    if(isset($output['domain']->site_key) && $output['domain']->site_key != $site_key) $output['domain'] = new SiteDomain();
+                }
+
+                break;
+        }
+
 
         $defaultSite = Site::find('default');
-        return XePresenter::make('multisite::views.settings.edit', compact('title','site_key', 'mode', 'Site', 'infos', 'defaultSite'));
+        return XePresenter::make('multisite::views.settings.edit', compact('title','site_key', 'mode', 'Site', 'output', 'defaultSite', 'target_route'));
+    }
+
+    public function deleteDomain(Request $request, $site_key)
+    {
+//        dd($request->get('id'));
+        \DB::table('site_domains')->where('site_key',$site_key)->where('is_featured','N')->whereIn('domain',$request->get('id'))->delete();
+        return redirect()->back()->with('alert', ['type' => 'success', 'message' => xe_trans('xe::saved')]);
+    }
+
+    public function createDomain(Request $request, $site_key)
+    {
+        $domain = SiteDomain::find($request->get('domain'));
+        $args = $request->except('_token','domain');
+        if(is_null($domain)){
+            //create
+            $domain = new SiteDomain();
+            $domain->fill(['domain' => $request->get('domain')]);
+            $domain->fill($args);
+            $domain->fill(['site_key' => $site_key, 'is_featured' => 'N']);
+            $domain->save();
+        }else if(isset($domain->site_key) && $domain->site_key == $site_key){
+            //update
+            foreach($args as $key => $val) $domain->{$key} = $val;
+            $domain->save();
+        }else{
+            return redirect()->back()->with('alert', ['type' => 'failed', 'message' => '잘못된 도메인이 요청되었습니다.']);
+        }
+
+        return redirect()->back()->with('alert', ['type' => 'success', 'message' => xe_trans('xe::saved')]);
+    }
+
+
+    public function updateDefaultDomain(Request $request, $site_key){
+        $domain = SiteDomain::find($request->get('featured_domain'));
+
+        if(isset($domain->site_key) && $domain->site_key == $site_key){
+            \DB::table('site_domains')->where('site_key',$site_key)->update(['is_featured' => 'N']);
+
+            $domain = SiteDomain::find($request->get('featured_domain'));
+            $domain->is_featured = "Y";
+            $domain->index_instance = null;
+            $domain->save();
+        }else{
+            return redirect()->back()->with('alert', ['type' => 'failed', 'message' => '잘못된 도메인이 요청되었습니다.']);
+        }
+
+        return redirect()->back()->with('alert', ['type' => 'success', 'message' => xe_trans('xe::saved')]);
     }
 
     public function update(Request $request, $site_key){
@@ -241,9 +308,8 @@ class MultisiteSettingsController extends BaseController
         }
         XeDB::commit();
 
-        return redirect()->route('settings.multisite.edit',['site_key' => $site_key])->with('alert', [
-            'type' => 'success', 'message' => '성공적으로 업데이트 되었습니다.'
-        ]);
+
+        return redirect()->back()->with('alert', ['type' => 'success', 'message' => xe_trans('xe::saved')]);
     }
 
     public function create(){
