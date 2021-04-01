@@ -22,6 +22,7 @@ use Xpressengine\Permission\Grant;
 use Xpressengine\Plugin\Exceptions\PluginActivationFailedException;
 use Xpressengine\Plugins\Board\Plugin\Resources as BoardResources;
 use Xpressengine\Plugins\Comment\Handler as commentHandler;
+use Xpressengine\Presenter\Html\Tags\Html;
 use Xpressengine\Skin\SkinHandler;
 use Xpressengine\Support\Migration;
 use Xpressengine\Theme\ThemeHandler;
@@ -188,6 +189,10 @@ class MultisiteSettingsController extends BaseController
             );
         }
 
+        $html = new Html();
+        $html->content('<script>var site_key = "'.$site_key.'";</script>');
+        $html->prependTo('head')->load();
+
         //for domain
         $output = [];
         switch($mode){
@@ -205,7 +210,36 @@ class MultisiteSettingsController extends BaseController
                     $output['domain'] = SiteDomain::find(\Request::get('target_domain'));
                     if(isset($output['domain']->site_key) && $output['domain']->site_key != $site_key) $output['domain'] = new SiteDomain();
                 }
-
+                break;
+            case 'managers' :
+                $permissionGroups = [
+                    "사이트 접근권한 설정" => [
+                        [
+                            "title" => "사이트 접속권한 (폐쇄형 사이트인 경우 사용)",
+                            "id" => "multisite"
+                        ],
+                        [
+                            "title" => "소유자",
+                            "id" => "multisite.owner"
+                        ],
+                        [
+                            "title" => "관리자 접근권한",
+                            "id" => "multisite.manager"
+                        ]
+                    ]
+                ];
+                $permissionHandler = app('xe.permission');
+                foreach ($permissionGroups as $tab => &$group) {
+                    foreach ($group as $key => &$item) {
+                        $permission = $permissionHandler->get('settings.'.$item['id'],$site_key);
+                        if ($permission === null) {
+                            $permission = $permissionHandler->register('settings.'.$item['id'], new Grant(),$site_key);
+                        }
+                        $item['id'] = 'settings.'.$item['id'];
+                        $item['permission'] = $permission;
+                    }
+                }
+                $output['permissionGroups'] = $permissionGroups;
                 break;
         }
 

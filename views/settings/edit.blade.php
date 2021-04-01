@@ -24,4 +24,3 @@
     @default
         @include('multisite::views.settings.edit.default', compact('site_key', 'Site', 'defaultSite'))
 @endswitch
-
