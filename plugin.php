@@ -3,6 +3,7 @@ namespace Amuz\XePlugin\Multisite;
 
 use Amuz\XePlugin\Multisite\Models\SiteDomain;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\URL;
 use Route;
 use Xpressengine\Plugin\AbstractPlugin;
 use Xpressengine\Site\SiteHandler;
@@ -81,7 +82,7 @@ class Plugin extends AbstractPlugin
 
         //scheme set
         $scheme = $domain->is_ssl == "Y" ? 'https://' : 'http://';
-        $cur_scheme = $request->isSecure() ?  'https://' : 'http://';
+        $cur_scheme = $this->checkSSL() ?  'https://' : 'http://';
 
         //현재 접속한 도메인의 스키마가 맞지 않는경우
         //CORS에서 로드밸런서의 https여부를 검증해주므로 여기선 안함
@@ -106,6 +107,22 @@ class Plugin extends AbstractPlugin
         $curSite = Site::find($domain->site_key);
         $site_handler = app('xe.site');
         $site_handler->setCurrentSite($curSite);
+    }
+
+    public function checkSSL(){
+        $is_ssl = false;
+        //SSL Load balancing fix
+        if ((isset($_ENV["HTTPS"]) && ("on" == $_ENV["HTTPS"]))
+            || (isset($_SERVER["HTTP_X_FORWARDED_SSL"]) && (strpos($_SERVER["HTTP_X_FORWARDED_SSL"], "1") !== false))
+            || (isset($_SERVER["HTTP_X_FORWARDED_SSL"]) && (strpos($_SERVER["HTTP_X_FORWARDED_SSL"], "on") !== false))
+            || (isset($_SERVER["HTTP_CF_VISITOR"]) && (strpos($_SERVER["HTTP_CF_VISITOR"], "https") !== false))
+            || (isset($_SERVER["HTTP_CLOUDFRONT_FORWARDED_PROTO"]) && (strpos($_SERVER["HTTP_CLOUDFRONT_FORWARDED_PROTO"], "https") !== false))
+            || (isset($_SERVER["HTTP_X_FORWARDED_PROTO"]) && (strpos($_SERVER["HTTP_X_FORWARDED_PROTO"], "https") !== false))
+            || (isset($_SERVER["HTTP_X_PROTO"]) && (strpos($_SERVER["HTTP_X_PROTO"], "SSL") !== false))
+        ) {
+            $is_ssl = true;
+        }
+        return $is_ssl;
     }
 
     /**
