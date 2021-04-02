@@ -120,6 +120,10 @@ class Plugin extends AbstractPlugin
             || (isset($_SERVER["HTTP_X_FORWARDED_PROTO"]) && (strpos($_SERVER["HTTP_X_FORWARDED_PROTO"], "https") !== false))
             || (isset($_SERVER["HTTP_X_PROTO"]) && (strpos($_SERVER["HTTP_X_PROTO"], "SSL") !== false))
         ) {
+            $_SERVER["HTTPS"] = "on";
+            URL::forceScheme('https');
+            $is_ssl = true;
+        }else if(request()->isSecure()){
             $is_ssl = true;
         }
         return $is_ssl;
