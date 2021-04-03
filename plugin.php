@@ -45,7 +45,7 @@ class Plugin extends AbstractPlugin
         $this->route();
 
         if(XeSite::getCurrentSiteKey() == 'default'){
-            $this->registerSitesPermissions();
+//            $this->registerSitesPermissions();
             $this->registerSettingsMenus();
             $this->registerSettingsRoute();
         }
@@ -241,6 +241,11 @@ class Plugin extends AbstractPlugin
           Route::post('/updateDefaultDomain/{site_key}', [
               'as' => 'settings.multisite.update.domain.default',
               'uses' => 'MultisiteSettingsController@updateDefaultDomain',
+          ]);
+
+          Route::post('/addSiteUser/{site_key}', [
+              'as' => 'settings.multisite.add.user',
+              'uses' => 'MultisiteSettingsController@addSiteUser',
           ]);
       },['namespace' => 'Amuz\XePlugin\Multisite\Controllers']);
     }

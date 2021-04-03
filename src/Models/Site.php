@@ -58,7 +58,7 @@ class Site extends XeSite
         return $this->Domains()->where('is_featured','=','Y');
     }
 
-    public function getDomainLink($text = null, $param = false){
+    public function getDomainLink($text = null, $param = false, $attribute = false){
         $domain = $this->FeaturedDomain->first();
         if($text === null) $text = $domain->domain;
 
@@ -66,7 +66,7 @@ class Site extends XeSite
         if($text === false){
             return sprintf("%s/%s",$link . $domain->domain,$param);
         }else{
-            return sprintf("<a href='%s/%s' target='_blank'>%s</a>",$link . $domain->domain,$param,$text);
+            return sprintf("<a href='%s/%s' %s target='_blank'>%s</a>",$link . $domain->domain,$param,$attribute,$text);
         }
 
     }

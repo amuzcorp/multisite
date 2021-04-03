@@ -1,6 +1,7 @@
 <?php
 namespace Amuz\XePlugin\Multisite\Controllers;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Filesystem\Filesystem;
 use XeFrontend;
 use XePresenter;
@@ -26,6 +27,8 @@ use Xpressengine\Presenter\Html\Tags\Html;
 use Xpressengine\Skin\SkinHandler;
 use Xpressengine\Support\Migration;
 use Xpressengine\Theme\ThemeHandler;
+use Xpressengine\User\Models\User;
+use Xpressengine\User\Models\UserGroup;
 use Xpressengine\User\Rating;
 use Xpressengine\Media\MediaManager;
 use Xpressengine\Storage\Storage;
@@ -211,6 +214,39 @@ class MultisiteSettingsController extends BaseController
                     if(isset($output['domain']->site_key) && $output['domain']->site_key != $site_key) $output['domain'] = new SiteDomain();
                 }
                 break;
+            case 'users' :
+                // get site groups
+                $output['groups'] = UserGroup::where('site_key',$site_key)->get();
+
+                //set current site groups
+                $group_ids = $output['groups']->pluck('id');
+                $collection = User::whereHas(
+                    'allSiteGroups',
+                    function (Builder $q) use ($group_ids) {
+                        $q->whereIn('group_id', $group_ids);
+                    }
+                );
+
+                $output['allUserCount'] = $collection->count();
+
+                // resolve search keyword
+                // keyfield가 지정되지 않을 경우 email, display_name, login_id를 대상으로 검색함
+                $request = request();
+                $field = $request->get('keyfield') ?: 'email,display_name,login_id';
+
+                if ($keyword = trim($request->get('keyword'))) {
+                    $collection = $collection->where(
+                        function (Builder $q) use ($field, $keyword) {
+                            foreach (explode(',', $field) as $f) {
+                                $q->orWhere($f, 'like', '%'.$keyword.'%');
+                            }
+                        }
+                    );
+                }
+
+                $output['users'] = $collection->orderBy('created_at', 'desc')->paginate()->appends(request()->query());
+                $output['user_config'] = app('xe.config')->get('user.register');
+                break;
             case 'managers' :
                 $permissionGroups = [
                     "사이트 접근권한 설정" => [
@@ -293,6 +329,20 @@ class MultisiteSettingsController extends BaseController
         }
 
         return redirect()->back()->with('alert', ['type' => 'success', 'message' => xe_trans('xe::saved')]);
+    }
+
+    public function addSiteUser(Request $request, $site_key){
+        $target_group = UserGroup::where('site_key',$site_key)->where('id',$request->get('group_id'))->first();
+        if($target_group == null)
+            return redirect()->back()->with('alert', ['type' => 'failed', 'message' => '올바른 그룹을 선택하세요.']);
+
+        $target_user = User::where('login_id',$request->get('user_id'))->orWhere('email',$request->get('user_id'))->first();
+        if($target_user == null)
+            return redirect()->back()->with('alert', ['type' => 'failed', 'message' => '추가할 회원 대상이 잘못되었습니다.']);
+
+        $target_user->joinGroups($target_group->id);
+        return redirect()->back()->with('alert', ['type' => 'success', 'message' => xe_trans('xe::saved')]);
+
     }
 
     public function update(Request $request, $site_key){

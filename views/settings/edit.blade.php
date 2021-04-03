@@ -15,6 +15,9 @@
     @case('domains')
         @include('multisite::views.settings.edit.domains', compact('site_key', 'Site', 'defaultSite'))
     @break
+    @case('users')
+        @include('multisite::views.settings.edit.users', compact('site_key', 'Site', 'defaultSite'))
+    @break
     @case('managers')
         @include('multisite::views.settings.edit.managers', compact('site_key', 'Site', 'defaultSite'))
     @break
