@@ -14,7 +14,11 @@
             <div id="{{ $groupName }}Section" class="panel-collapse panel-body collapse in" role="tabpanel">
                 @foreach ($group as $key => $item)
                     <div class="panel">
-                    <form method="post" action="{{ route('settings.setting.update.permission', $item['id']) }}">
+
+                        <form  method="post" action="{{ route('settings.multisite.update.permissions', [
+                                            'site_key' => $site_key,
+                                            'permission_id' => $item['id']
+                                            ]) }}" onsubmit="return updateSiteSetting(this)">
                         <input type="hidden" name="_token" value="{{{ Session::token() }}}">
                         <input type="hidden" name="site_key" value="{{ $site_key }}" />
                         <div class="panel-heading">
