@@ -182,7 +182,7 @@ class MultisiteSettingsController extends BaseController
         return $this->edit($site_key, $mode, 'settings.multisite.mysite');
     }
 
-    public function edit($site_key, $mode = 'meta', $target_route = 'settings.multisite.edit'){
+    public function edit($site_key, $mode = null, $target_route = 'settings.multisite.edit'){
         $title = xe_trans('multisite::multisite');
 
         $Site = Site::find($site_key);
@@ -195,6 +195,9 @@ class MultisiteSettingsController extends BaseController
         $html = new Html();
         $html->content('<script>var site_key = "'.$site_key.'";</script>');
         $html->prependTo('head')->load();
+
+        //call permission handler
+        $permissionHandler = app('xe.permission');
 
         //for domain
         $output = [];
@@ -264,7 +267,6 @@ class MultisiteSettingsController extends BaseController
                         ]
                     ]
                 ];
-                $permissionHandler = app('xe.permission');
                 foreach ($permissionGroups as $tab => &$group) {
                     foreach ($group as $key => &$item) {
                         $permission = $permissionHandler->get('settings.'.$item['id'],$site_key);
@@ -276,6 +278,43 @@ class MultisiteSettingsController extends BaseController
                     }
                 }
                 $output['permissionGroups'] = $permissionGroups;
+                break;
+            case 'menu' :
+                $getMenu = \XeRegister::get('settings/menu');
+                ksort($getMenu);
+
+                //메뉴 엑세스권한
+                $permission = $permissionHandler->get('multisite.menus',$site_key);
+                if ($permission === null) $permissionHandler->register('multisite.menus', new Grant(),$site_key);
+
+                foreach ($getMenu as $id => $item) {
+                    if(!isset($item['display'])) $item['display'] = true;
+                    if($item['display'] != true){
+                        unset($getMenu[$id]);
+                        continue;
+                    }
+                    $permission = $permissionHandler->get('multisite.menus.'.$id,$site_key);
+                    if ($permission === null) $permission = $permissionHandler->register('multisite.menus.'.$id, new Grant(),$site_key);
+
+//                    $item['title'] = xe_trans($item['title']);
+                    $item['id'] = 'multisite.menus.'.$id;
+                    $item['permission'] = $permission;
+
+                    //TODO if has config, replace $item
+                    $item['icon'] = isset($item['icon']) ? $item['icon'] : 'xi-bars';
+                    $item['is_off'] = isset($item['is_off']) ? $item['is_off'] : 'N';
+                    $getMenu[$id] = $item;
+                }
+
+                foreach (  $getMenu as  $key => $value ) {
+                    $key = str_replace(".", ".child.", $key);
+                    array_set($menus, $key, $value);
+                }
+
+                uasort($menus, function($a, $b){
+                    return $a['ordering'] - $b['ordering'];
+                });
+                $output['menus'] = $menus;
                 break;
         }
 

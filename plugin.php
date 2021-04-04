@@ -203,6 +203,9 @@ class Plugin extends AbstractPlugin
         \XeRegister::push('settings/menu', 'setting.default', [
             'display' => false,
         ]);
+        \XeRegister::push('settings/menu', 'setting.permission', [
+            'display' => false,
+        ]);
     }
 
     /**

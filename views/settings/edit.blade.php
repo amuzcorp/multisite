@@ -21,6 +21,9 @@
     @case('managers')
         @include('multisite::views.settings.edit.managers', compact('site_key', 'Site', 'defaultSite'))
     @break
+    @case('menu')
+        @include('multisite::views.settings.edit.menu', compact('site_key', 'Site', 'defaultSite'))
+    @break
     @case('delete')
         @include('multisite::views.settings.edit.delete', compact('site_key', 'Site', 'defaultSite'))
     @break
