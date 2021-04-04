@@ -285,32 +285,62 @@ class MultisiteSettingsController extends BaseController
 
                 //메뉴 엑세스권한
                 $permission = $permissionHandler->get('multisite.menus',$site_key);
+                $translator = app('xe.translator');
+                $config = app('xe.config');
+                $setting_menu_config = $config->get('setting_menus',false,$site_key);
+                if($setting_menu_config == null) $setting_menu_config = $config->set('setting_menus',[],false,null,$site_key);
+
                 if ($permission === null) $permissionHandler->register('multisite.menus', new Grant(),$site_key);
 
                 foreach ($getMenu as $id => $item) {
-                    if(!isset($item['display'])) $item['display'] = true;
-                    if($item['display'] != true){
+                    //if has config, replace $item
+                    $item_config = $config->get('setting_menus.'.$id,false,$site_key);
+                    if($item_config != null){
+                        foreach($item_config as $key => $val) $item[$key] = $val;
+                    }
+
+                    //플러그인에서 삭제한경우, is_off가 선언되지 않고 display만 false가 됨
+                    if(array_get($item,'display',false) == false && !isset($item['is_off'])){
                         unset($getMenu[$id]);
                         continue;
                     }
+
+                    $item['display'] = array_get($item,'display',false);
+                    $item['title'] = array_get($item,'title','Deleted by Plugin');
+                    $item['ordering'] = array_get($item,'ordering',9999);
+                    $item['icon'] = array_get($item,'icon','xi-bars');
+                    $item['is_off'] = array_get($item,'is_off','N');
+
+                    if(!isset($item['title_lang'])){
+                        $title_lang = $translator->genUserKey();
+                        foreach ($translator->getLocales() as $locale) {
+                            $value = xe_trans($item['title'],[],$locale);
+                            XeLang::save($title_lang, $locale, $value);
+                        }
+                        $item['title_lang'] = $title_lang;
+                    }
+
+                    //save for default options
+                    $item_config = $config->set('setting_menus.'.$id,$item,false,null,$site_key);
+                    $config->modify($item_config);
+
                     $permission = $permissionHandler->get('multisite.menus.'.$id,$site_key);
                     if ($permission === null) $permission = $permissionHandler->register('multisite.menus.'.$id, new Grant(),$site_key);
 
-//                    $item['title'] = xe_trans($item['title']);
-                    $item['id'] = 'multisite.menus.'.$id;
+                    $item['menuGroup'] = str_replace('.','_',$id);
+                    $item['config_key'] = 'setting_menus.'.$id;
+                    $item['permission_key'] = 'multisite.menus.'.$id;
                     $item['permission'] = $permission;
+                    $item['title'] = $item['title_lang'];
 
-                    //TODO if has config, replace $item
-                    $item['icon'] = isset($item['icon']) ? $item['icon'] : 'xi-bars';
-                    $item['is_off'] = isset($item['is_off']) ? $item['is_off'] : 'N';
                     $getMenu[$id] = $item;
                 }
+                $config->modify($setting_menu_config);
 
                 foreach (  $getMenu as  $key => $value ) {
                     $key = str_replace(".", ".child.", $key);
                     array_set($menus, $key, $value);
                 }
-
                 uasort($menus, function($a, $b){
                     return $a['ordering'] - $b['ordering'];
                 });
@@ -322,6 +352,71 @@ class MultisiteSettingsController extends BaseController
         $defaultSite = Site::find('default');
         return XePresenter::make('multisite::views.settings.edit', compact('title','site_key', 'mode', 'Site', 'output', 'defaultSite', 'target_route'));
     }
+
+    public function updateSettingMenusConfig(Request $request,$site_key,$config_id)
+    {
+        $config = app('xe.config');
+        $itemConfig = $config->get($config_id,false,$site_key);
+        if($itemConfig == null)
+            return XePresenter::makeApi(['alert_type' => 'danger', 'message' => '잘못된 설정의 변경을 시도합니다.']);
+
+        $item = $request->only('icon','is_off','ordering','description');
+        $item['title_lang'] = $request->get('title');
+        foreach($item as $key => $val) $itemConfig[$key] = $val;
+
+        app('xe.config')->modify($itemConfig);
+        return XePresenter::makeApi(['alert_type' => 'success', 'message' => '설정이 저장되었습니다.']);
+    }
+
+    public function updateSitePermissions(Request $request,$site_key,$permission_id)
+    {
+        $permissionHandler = app('xe.permission');
+        $permissionHandler->register($permission_id, $this->createAccessGrant(
+            $request->only(['accessRating', 'accessGroup', 'accessUser', 'accessExcept'])
+        ),$request->get('site_key'));
+
+        return XePresenter::makeApi(['alert_type' => 'success', 'message' => '엑세스 권한이 저장되었습니다.']);
+    }
+
+    /**
+     * Create the grant of access
+     *
+     * @param array $inputs to create grant params array
+     * @return Grant
+     */
+    protected function createAccessGrant(array $inputs)
+    {
+        $grant = new Grant;
+
+        $rating = array_get($inputs, 'accessRating', Rating::SUPER);
+        $group = $this->innerParamParsing($inputs['accessGroup']);
+        $user = $this->innerParamParsing($inputs['accessUser']);
+        $except = $this->innerParamParsing($inputs['accessExcept']);
+
+        $grant->add('access', 'rating', $rating);
+        $grant->add('access', 'group', $group);
+        $grant->add('access', 'user', $user);
+        $grant->add('access', 'except', $except);
+
+        return $grant;
+    }
+
+    /**
+     * Parse the given parameter.
+     *
+     * @param string $param parameter
+     * @return array
+     */
+    protected function innerParamParsing($param)
+    {
+        if (empty($param)) {
+            return [];
+        }
+
+        $ret = explode(',', $param);
+        return array_filter($ret);
+    }
+
 
     public function deleteDomain(Request $request, $site_key)
     {
