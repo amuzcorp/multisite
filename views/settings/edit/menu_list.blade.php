@@ -3,7 +3,7 @@
         <div class="sort-list__handler">
             <button type="button" class="xu-button xu-button--subtle-link xu-button--icon">
                 <span class="xu-button__icon">
-                    <i class="{{$menuItem['icon']}}"></i>
+                    <i class="{{ array_get($menuItem,'icon','xi-bars') }}"></i>
                 </span>
             </button>
         </div>
