@@ -289,13 +289,15 @@ class MultisiteSettingsController extends BaseController
                 $config = app('xe.config');
                 $setting_menu_config = $config->get('setting_menus',false,$site_key);
                 if($setting_menu_config == null) $setting_menu_config = $config->set('setting_menus',[],false,null,$site_key);
-
                 if ($permission === null) $permissionHandler->register('multisite.menus', new Grant(),$site_key);
 
                 foreach ($getMenu as $id => $item) {
                     //if has config, replace $item
                     $item_config = $config->get('setting_menus.'.$id,false,$site_key);
-                    if($item_config != null){
+                    if($item_config == null){
+                        $item_config = $config->set('setting_menus.'.$id,$item,false,null,$site_key);
+                        $config->modify($item_config);
+                    }else{
                         foreach($item_config as $key => $val) $item[$key] = $val;
                     }
 
