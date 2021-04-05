@@ -1,11 +1,11 @@
 <?php
 namespace Amuz\XePlugin\Multisite;
 
+use Amuz\XePlugin\Multisite\Middleware\SetSiteGrantMiddleware;
 use Amuz\XePlugin\Multisite\Models\SiteDomain;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\URL;
 use Route;
-use Gate;
 use Xpressengine\Permission\Instance as PermissionInstance;
 use Xpressengine\Plugin\AbstractPlugin;
 use Xpressengine\Site\SiteHandler;
@@ -13,6 +13,7 @@ use Xpressengine\Translation\Translator;
 use XeRegister;
 use XeSite;
 use Schema;
+use Auth;
 
 use Amuz\XePlugin\Multisite\Components\Modules\SiteList\SiteListModule;
 
@@ -56,8 +57,8 @@ class Plugin extends AbstractPlugin
         }
         $this->registerSitesSettingsRoute();
 
-        //update Setting Menus
-        $this->setSettingMenus();
+        //setMiddleWare
+        app('router')->pushMiddlewareToGroup('web', SetSiteGrantMiddleware::class);
     }
 
     public static function putLang()
@@ -291,42 +292,6 @@ class Plugin extends AbstractPlugin
     protected function route()
     {
         // implement code
-    }
-
-    protected function setSettingMenus(){
-        $site_key = XeSite::getCurrentSiteKey();
-        $permissionHandler = app('xe.permission');
-        $config = app('xe.config');
-
-        //메뉴 엑세스권한
-        $permission = $permissionHandler->get('multisite',$site_key);
-        if ($permission === null) return;
-        $setting_menu_config = $config->get('setting_menus',false,$site_key);
-        if($setting_menu_config == null) return;
-
-        $getMenu = \XeRegister::get('settings/menu');
-        ksort($getMenu);
-        foreach ($getMenu as $id => $item) {
-            $itemPermission = $permissionHandler->get('multisite.menus'.$id,$site_key);
-            if($itemPermission != null){
-                if(Gate::denies('access', new PermissionInstance('multisite.menus.'.$id))) {
-                    $item['display'] = false;
-                    \XeRegister::push('settings/menu', $id, $item);
-                }
-            }
-
-            //if has config, replace $item
-            $item_config = $config->get('setting_menus.'.$id,false,$site_key);
-            if($item_config == null) continue;
-
-            if(isset($item_config['is_off']) && $item_config['is_off'] == "Y") $item['display'] = false;
-            if(isset($item_config['title_lang'])) $item['title'] = $item_config['title_lang'];
-            if(isset($item_config['icon'])) $item['icon'] = $item_config['icon'];
-            if(isset($item_config['ordering'])) $item['ordering'] = $item_config['ordering'];
-            if(isset($item_config['description'])) $item['description'] = $item_config['description'];
-
-            \XeRegister::push('settings/menu', $id, $item);
-        }
     }
 
     /**
