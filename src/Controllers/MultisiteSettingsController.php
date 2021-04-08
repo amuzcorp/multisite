@@ -202,15 +202,18 @@ class MultisiteSettingsController extends BaseController
             "사이트 접근권한 설정" => [
                 [
                     "title" => "사이트 접속권한 (폐쇄형 사이트인 경우 사용)",
-                    "id" => "multisite"
+                    "id" => "multisite",
+                    "default" => ["access" => ["rating" => "guest","group" => [],"user" => [],"except" => []]],
                 ],
                 [
                     "title" => "소유자",
-                    "id" => "multisite.owner"
+                    "id" => "multisite.owner",
+                    "default" => ["access" => ["rating" => "super","group" => [],"user" => [],"except" => []]],
                 ],
                 [
                     "title" => "관리자 접근권한",
-                    "id" => "multisite.manager"
+                    "id" => "multisite.manager",
+                    "default" => ["access" => ["rating" => "super","group" => [],"user" => [],"except" => []]],
                 ]
             ]
         ];
@@ -218,7 +221,7 @@ class MultisiteSettingsController extends BaseController
             foreach ($group as $key => &$item) {
                 $permission = $permissionHandler->get('settings.'.$item['id'],$site_key);
                 if ($permission === null) {
-                    $permission = $permissionHandler->register('settings.'.$item['id'], new Grant(),$site_key);
+                    $permission = $permissionHandler->register('settings.'.$item['id'], new Grant($item['default']),$site_key);
                 }
                 $item['id'] = 'settings.'.$item['id'];
                 $item['permission'] = $permission;
