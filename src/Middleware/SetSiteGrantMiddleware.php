@@ -111,12 +111,12 @@ class SetSiteGrantMiddleware
                     \XeRegister::push('settings/menu', $id, $item);
                 }
             }
-        }else if(!$this->isSuper()){
-            //관리자메뉴가 아니면 접근권한이 있는지 확인한다.
-            $allow = false;
-            if($siteAccessPermission != null) {
-                $allow = $this->gate->allows('access', new PermissionInstance('settings.multisite'));
-            }
+
+        //관리자메뉴가 아니면 접근권한이 있는지 확인한다.
+        //딱히 접근에 제한을두는 설정을 하지않았다면 그냥 패스
+        //최고관리자는 이걸 패스함.
+        }else if(!$this->isSuper() && $siteAccessPermission != null){
+            $allow = $this->gate->allows('access', new PermissionInstance('settings.multisite'));
             if($allow == false && $siteManagerPermission != null){
                 $allow = $this->gate->allows('access', new PermissionInstance('settings.multisite.manager'));
             }
