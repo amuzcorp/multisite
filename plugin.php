@@ -69,6 +69,8 @@ class Plugin extends AbstractPlugin
     }
 
     public function setSiteDomainInfo(){
+        if(!Schema::hasTable('site_domains')) return;
+
         $request = request();
         $current_domain = $request->getHttpHost();
         $current_path = $request->getRequestUri();

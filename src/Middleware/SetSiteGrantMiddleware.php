@@ -58,6 +58,9 @@ class SetSiteGrantMiddleware
 
         //관리자 라우팅인경우 메뉴를 저장된 설정에 따라 바꿔서 덮어주고 각 메뉴마다의 권한을 설정 해 준다.
         if($route_name[0] == 'settings'){
+            //게스트는 일단 무조건패스
+            if(auth()->guest() === true) return $next($request);
+
             $allow = false;
             //소유자이거나 관리자인지 확인해야한다.
             if($allow == false && $siteManagerPermission != null){
