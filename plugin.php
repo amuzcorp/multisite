@@ -56,7 +56,6 @@ class Plugin extends AbstractPlugin
             $this->registerSettingsRoute();
         }
         $this->registerSitesSettingsRoute();
-
         //setMiddleWare
         app('router')->pushMiddlewareToGroup('web', SetSiteGrantMiddleware::class);
     }
