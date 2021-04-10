@@ -2,6 +2,7 @@
 namespace Amuz\XePlugin\Multisite;
 
 use Amuz\XePlugin\Multisite\Middleware\SetSiteGrantMiddleware;
+use Amuz\XePlugin\Multisite\Middleware\SetSettingMenusMiddleware;
 use Amuz\XePlugin\Multisite\Models\SiteDomain;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\URL;
@@ -24,16 +25,15 @@ use Amuz\XePlugin\Multisite\Migrations\SitesMigration;
 
 class Plugin extends AbstractPlugin
 {
+    /**
+     * 이 메소드는 활성화가 안되어도 실행된다..
+     *
+     * @return void
+     */
     public function register()
     {
         //정상적인 사이트정보인지 먼저 체크
         $this->setSiteDomainInfo();
-
-        //관리자메뉴 등 등록
-        if(XeSite::getCurrentSiteKey() == 'default'){
-            $this->registerSettingsMenus();
-        }
-        $this->changeSettingsMenus();
 
         //메타정보 등록
         Resources::setSiteInfo();
@@ -45,6 +45,7 @@ class Plugin extends AbstractPlugin
      */
     public function boot()
     {
+        app('router')->prependMiddlewareToGroup('web', SetSettingMenusMiddleware::class);
         Site::observe(SiteObserver::class);
 
         $this->putLang(); //요건나중에 update로 옮길것
@@ -138,59 +139,6 @@ class Plugin extends AbstractPlugin
         return $is_ssl;
     }
 
-
-    /**
-     * Register Plugin Settings Menus
-     *
-     * @return void
-     */
-    private function registerSettingsMenus(){
-        \XeRegister::push('settings/menu', 'sites', [
-            'title' => '멀티사이트',
-            'description' => '사이트를 생성하고 관리합니다.',
-            'display' => true,
-            'ordering' => 200
-        ]);
-        \XeRegister::push('settings/menu', 'sites.index', [
-            'title' => '사이트 목록',
-            'description' => '생성된 사이트목록을 열람합니다.',
-            'display' => true,
-            'ordering' => 100
-        ]);
-        \XeRegister::push('settings/menu', 'sites.create', [
-            'title' => '새 사이트 추가',
-            'description' => '사이트를 추가하고 편집합니다.',
-            'display' => true,
-            'ordering' => 200
-        ]);
-    }
-
-    /**
-     * Replace Plugin Settings Menus
-     *
-     * @return void
-     */
-    private function changeSettingsMenus(){
-        \XeRegister::push('settings/menu', 'sitemap', [
-            'title' => '사이트',
-            'display' => true,
-            'description' => 'xe::siteMapDescription',
-            'ordering' => 2000
-        ]);
-        \XeRegister::push('settings/menu', 'sitemap.site', [
-            'title' => '사이트 설정',
-            'display' => true,
-            'description' => 'xe::siteMapDescription',
-            'ordering' => 2000
-        ]);
-        //기본설정 이동으로 기존설정 제거
-        \XeRegister::push('settings/menu', 'setting.default', [
-            'display' => false,
-        ]);
-        \XeRegister::push('settings/menu', 'setting.permission', [
-            'display' => false,
-        ]);
-    }
 
     /**
      * Register Plugin Settings Route
