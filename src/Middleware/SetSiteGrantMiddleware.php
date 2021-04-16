@@ -61,6 +61,8 @@ class SetSiteGrantMiddleware
             if($this->gate->allows('access', new PermissionInstance('settings.multisite.manager')) || $this->gate->allows('access', new PermissionInstance('settings.multisite.owner'))){
                 $this->setSuperUser();
                 return $next($request);
+            }else{
+                return $next($request);
             }
         //관리자 라우팅인경우 메뉴를 저장된 설정에 따라 바꿔서 덮어주고 각 메뉴마다의 권한을 설정 해 준다.
         }else if($route_name[0] == 'settings'){
@@ -131,9 +133,10 @@ class SetSiteGrantMiddleware
                 $allow = $this->gate->allows('access', new PermissionInstance('settings.multisite.owner'));
             }
             if($allow == false) throw new AuthorizationException(xe_trans('xe::accessDenied'));
+        }else{
+            //접근설정도 안되어있고, 관리자 라우팅도 아니고, api라우팅도 아니면 그냥 넘어간다.
+            return $next($request);
         }
-
-        return $next($request);
     }
 
     private function isSuper(){
