@@ -56,8 +56,14 @@ class SetSiteGrantMiddleware
         $siteManagerPermission = $permissionHandler->get('settings.multisite.manager');
         $siteOwnerPermission = $permissionHandler->get('settings.multisite.owner');
 
+        //API라우팅이면 오너나 매니저에겐 무조건 허용해준다.
+        if(in_array('api',$current_route->getName())){
+            if($this->gate->allows('access', new PermissionInstance('settings.multisite.manager')) || $this->gate->allows('access', new PermissionInstance('settings.multisite.owner'))){
+                $this->setSuperUser();
+                return $next($request);
+            }
         //관리자 라우팅인경우 메뉴를 저장된 설정에 따라 바꿔서 덮어주고 각 메뉴마다의 권한을 설정 해 준다.
-        if($route_name[0] == 'settings'){
+        }else if($route_name[0] == 'settings'){
             //게스트는 일단 무조건패스
             if(auth()->guest() === true) return $next($request);
 
