@@ -57,7 +57,7 @@ class SetSiteGrantMiddleware
         $siteOwnerPermission = $permissionHandler->get('settings.multisite.owner');
 
         //API라우팅이면 오너나 매니저에겐 무조건 허용해준다.
-        if(in_array('api',$current_route->getName())){
+        if(in_array('api',$route_name)){
             if($this->gate->allows('access', new PermissionInstance('settings.multisite.manager')) || $this->gate->allows('access', new PermissionInstance('settings.multisite.owner'))){
                 $this->setSuperUser();
                 return $next($request);
