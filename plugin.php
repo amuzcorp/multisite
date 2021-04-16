@@ -59,6 +59,7 @@ class Plugin extends AbstractPlugin
         $this->registerSitesSettingsRoute();
         //setMiddleWare
         app('router')->pushMiddlewareToGroup('web', SetSiteGrantMiddleware::class);
+        app('router')->pushMiddlewareToGroup('api', SetSiteGrantMiddlewareForAPI::class);
     }
 
     public static function putLang()

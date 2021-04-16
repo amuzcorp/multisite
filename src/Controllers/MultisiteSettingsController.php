@@ -330,7 +330,7 @@ class MultisiteSettingsController extends BaseController
                     $config->modify($item_config);
 
                     $permission = $permissionHandler->get('multisite.menus.'.$id,$site_key);
-                    if ($permission === null) $permission = $permissionHandler->register('multisite.menus.'.$id, new Grant(),$site_key);
+                    if ($permission === null) $permission = $permissionHandler->register('multisite.menus.'.$id, new Grant(["access" => ["rating" => "manager","group" => [],"user" => [],"except" => []]]),$site_key);
 
                     $item['menuGroup'] = str_replace('.','_',$id);
                     $item['config_key'] = 'setting_menus.'.$id;
