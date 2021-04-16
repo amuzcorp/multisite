@@ -133,10 +133,10 @@ class SetSiteGrantMiddleware
                 $allow = $this->gate->allows('access', new PermissionInstance('settings.multisite.owner'));
             }
             if($allow == false) throw new AuthorizationException(xe_trans('xe::accessDenied'));
-        }else{
-            //접근설정도 안되어있고, 관리자 라우팅도 아니고, api라우팅도 아니면 그냥 넘어간다.
-            return $next($request);
         }
+
+        //접근설정도 안되어있고, 관리자 라우팅도 아니고, api라우팅도 아니면 그냥 넘어간다.
+        return $next($request);
     }
 
     private function isSuper(){
