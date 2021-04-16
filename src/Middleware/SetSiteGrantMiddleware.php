@@ -82,20 +82,17 @@ class SetSiteGrantMiddleware
             $getMenu = \XeRegister::get('settings/menu');
             ksort($getMenu);
             foreach ($getMenu as $id => $item) {
-                //소유자는 여길 건너뜀.
-                if($this->gate->denies('access', new PermissionInstance('settings.multisite.manager'))){
-                    //if has permission, set grant
+                //관리자메뉴에 권한설정이 저장되어있는지 확인
+                //소유자는 무조건 패스하고, 관리자를 대상으로 한다.
+                if($this->gate->denies('access', new PermissionInstance('settings.multisite.owner'))){
                     $itemPermission = $permissionHandler->get('multisite.menus'.$id,$site_key);
                     if($itemPermission != null){
-                        //소유자는 무조건 패스.
                         //퍼미션이 설정되었는데, 권한이 없는 유저가 접근하면 메뉴에서 삭제
                         if($this->gate->denies('access', new PermissionInstance('multisite.menus.'.$id))) {
                             $item['display'] = false;
                             \XeRegister::push('settings/menu', $id, $item);
-                        }
-
-                        //권한이 설정되었는데 권한이 있고, 현재 라우트 액션과 setting_menu($id)가 같다면 임시로 슈퍼권한을 덮어줌.
-                        if($action == $id && $this->gate->allows('access', new PermissionInstance('multisite.menus.'.$id))){
+                        //권한이 있으면, 현재 라우트 액션과 setting_menu($id)가 같다면 임시로 슈퍼권한을 덮어줌.
+                        }else if($action == $id && $this->gate->allows('access', new PermissionInstance('multisite.menus.'.$id))){
                             $this->setSuperUser();
                         }
                     }
