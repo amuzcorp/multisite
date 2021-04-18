@@ -48,9 +48,6 @@ class SetSiteGrantMiddlewareForSettingsRoute
      */
     public function handle($request, Closure $next)
     {
-        //게스트는 일단 무조건패스
-        if(auth()->guest() === true) return $next($request);
-
         $current_route = app('request')->route();
 
         $site_key = \XeSite::getCurrentSiteKey();
