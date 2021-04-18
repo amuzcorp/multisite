@@ -7,7 +7,7 @@ use Illuminate\Contracts\Auth\Access\Gate as GateContract;
 use Illuminate\Contracts\Foundation\Application;
 use Xpressengine\Permission\Instance as PermissionInstance;
 
-class SetSiteGrantMiddleware
+class SetSiteGrantMiddlewareForAPI
 {
 
     /**
@@ -41,26 +41,19 @@ class SetSiteGrantMiddleware
      */
     public function handle($request, Closure $next)
     {
-        $current_route = app('request')->route();
-        $route_name = explode('.',$current_route->getName());
-
-        //패스 할 라우팅들 (확인되는데로 계속 추가할 예정)
-        $pass_routes = ['login','auth','lang'];
-        if(in_array($route_name[0],$pass_routes)) return $next($request);
-
-        $site_key = \XeSite::getCurrentSiteKey();
         $permissionHandler = app('xe.permission');
-        $config = app('xe.config');
 
-        $siteAccessPermission = $permissionHandler->get('settings.multisite');
-        $siteManagerPermission = $permissionHandler->get('settings.multisite.manager');
-        $siteOwnerPermission = $permissionHandler->get('settings.multisite.owner');
+        //null이면 설정이 없는것, true면 허용, false면 거절
+        //설정이 없어도 최고관리자면 owner 권한을 준다.
+        if($this->isSuper()) $allowOwner = true;
+        else $allowOwner = ($permissionHandler->get('settings.multisite.owner') == null) ? null : $this->gate->allows('access', new PermissionInstance('settings.multisite.owner'));
 
-        if($this->gate->allows('access', new PermissionInstance('settings.multisite.manager')) || $this->gate->allows('access', new PermissionInstance('settings.multisite.owner'))){
-            $this->setSuperUser();
-            return $next($request);
-        }
-        
+        //매니저 권한
+        $allowManager = ($permissionHandler->get('settings.multisite.manager') == null) ? null : $this->gate->allows('access', new PermissionInstance('settings.multisite.manager'));
+
+        //API접근시 소유자나 관리자에게 슈퍼권한을 준다
+        if($allowManager === true || $allowOwner === true) $this->setSuperUser();
+
         return $next($request);
     }
 

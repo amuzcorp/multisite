@@ -3,11 +3,11 @@ namespace Amuz\XePlugin\Multisite;
 
 use Amuz\XePlugin\Multisite\Middleware\SetSiteGrantMiddleware;
 use Amuz\XePlugin\Multisite\Middleware\SetSettingMenusMiddleware;
+use Amuz\XePlugin\Multisite\Middleware\SetSiteGrantMiddlewareForSettingsRoute;
 use Amuz\XePlugin\Multisite\Models\SiteDomain;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\URL;
 use Route;
-use Xpressengine\Permission\Instance as PermissionInstance;
 use Xpressengine\Plugin\AbstractPlugin;
 use Xpressengine\Site\SiteHandler;
 use Xpressengine\Translation\Translator;
@@ -18,7 +18,6 @@ use Auth;
 
 use Amuz\XePlugin\Multisite\Components\Modules\SiteList\SiteListModule;
 
-use Amuz\XePlugin\Multisite\Resources;
 use Amuz\XePlugin\Multisite\Models\Site;
 use Amuz\XePlugin\Multisite\Observers\SiteObserver;
 use Amuz\XePlugin\Multisite\Migrations\SitesMigration;
@@ -45,6 +44,7 @@ class Plugin extends AbstractPlugin
      */
     public function boot()
     {
+        //관리자메뉴를 추가해줌.
         app('router')->prependMiddlewareToGroup('web', SetSettingMenusMiddleware::class);
         Site::observe(SiteObserver::class);
 
@@ -57,9 +57,10 @@ class Plugin extends AbstractPlugin
             $this->registerSettingsRoute();
         }
         $this->registerSitesSettingsRoute();
+
         //setMiddleWare
         app('router')->pushMiddlewareToGroup('web', SetSiteGrantMiddleware::class);
-        app('router')->pushMiddlewareToGroup('api', SetSiteGrantMiddlewareForAPI::class);
+        app('router')->aliasMiddleware('settings', SetSiteGrantMiddlewareForSettingsRoute::class);
     }
 
     public static function putLang()
