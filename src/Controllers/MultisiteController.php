@@ -63,7 +63,7 @@ class MultisiteController extends BaseController
                     $query->orWhere('vars','like','%'.$item.'%');
                 }
             });
-        })->paginate(30);
+        })->paginate(40);
 //        dd(\DB::getQueryLog()); // Show results of log
 
         // set browser title
