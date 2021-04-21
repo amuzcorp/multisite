@@ -304,7 +304,7 @@ class MultisiteSettingsController extends BaseController
                         continue;
                     }
 
-                    $item['display'] = isset($item_config['display']);
+                    $item['display'] = isset($item['display']); //얘는 저장을 따로안하니까 항상 item에서 받아와야함
                     $item['title'] = array_get($item_config,'title','Deleted by Plugin');
                     $item['ordering'] = array_get($item_config,'ordering',9999);
                     $item['icon'] = array_get($item_config,'icon','xi-bars');
@@ -357,7 +357,7 @@ class MultisiteSettingsController extends BaseController
         if($item_config == null)
             return XePresenter::makeApi(['alert_type' => 'danger', 'message' => '잘못된 설정의 변경을 시도합니다.']);
 
-        $item = $request->only('icon','is_off','ordering','description');
+        $item = $request->only('icon','is_off','ordering','description','title');
         $item['title_lang'] = $request->get('title');
 
         $config->setVal($config_id,$item,false,null,$site_key);

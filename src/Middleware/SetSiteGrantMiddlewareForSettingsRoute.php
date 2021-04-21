@@ -78,7 +78,7 @@ class SetSiteGrantMiddlewareForSettingsRoute
         foreach ($getMenu as $id => $item) {
             //소유자는 아이템 리플레이스만 함
             if($allowOwner == true && $setting_menu_config != null){
-                $this->replaceSettingMenuItem($id,$item,$site_key);
+                $this->replaceSettingMenuItem($id,$site_key);
             }else{
                 //해당 메뉴아이템의 권한이 저장된적 있으면
                 if($permissionHandler->get('multisite.menus.'.$id,$site_key) != null){
@@ -88,7 +88,7 @@ class SetSiteGrantMiddlewareForSettingsRoute
                         \XeRegister::push('settings/menu', $id, $item);
                     //권한이 있는유저면 메뉴 아이콘, 정보 등 설정에서 대체
                     }else if($setting_menu_config != null){
-                        $this->replaceSettingMenuItem($id,$item,$site_key);
+                        $this->replaceSettingMenuItem($id,$site_key);
                     }
 
                     //권한이 없고, 현재 라우트 액션과 setting_menu($id)가 같다면 접근거부
@@ -97,7 +97,7 @@ class SetSiteGrantMiddlewareForSettingsRoute
                     }
                 //권한이 저장된 적이 없으면 그냥 리플레이스
                 }else if($setting_menu_config != null){
-                    $this->replaceSettingMenuItem($id,$item,$site_key);
+                    $this->replaceSettingMenuItem($id,$site_key);
                 }
             }
         }
@@ -110,17 +110,14 @@ class SetSiteGrantMiddlewareForSettingsRoute
         return $settingsMiddleware->handle($request,$next);
     }
 
-    private function replaceSettingMenuItem($id,$item,$site_key){
-        $item_config = $this->config->get('setting_menus.'.$id,false,$site_key);
+    private function replaceSettingMenuItem($id,$site_key){
+        $item_config = $this->config->getVal('setting_menus.'.$id,null,true,$site_key);
         if($item_config == null) return;
 
-        if(isset($item_config['is_off']) && $item_config['is_off'] == "Y") $item['display'] = false;
-        if(isset($item_config['title_lang'])) $item['title'] = $item_config['title_lang'];
-        if(isset($item_config['icon'])) $item['icon'] = $item_config['icon'];
-        if(isset($item_config['ordering'])) $item['ordering'] = $item_config['ordering'];
-        if(isset($item_config['description'])) $item['description'] = $item_config['description'];
+        $item_config['display'] = array_get($item_config,'is_off','N') == "Y" ? false : true;
+        $item_config['title'] = array_get($item_config,'title_lang',null) == null ? $item_config['title'] : $item_config['title_lang'];
 
-        \XeRegister::push('settings/menu', $id, $item);
+        \XeRegister::push('settings/menu', $id, $item_config);
     }
 
     private function isManager(){
