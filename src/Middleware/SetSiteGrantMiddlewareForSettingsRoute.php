@@ -63,8 +63,15 @@ class SetSiteGrantMiddlewareForSettingsRoute
 
         //메뉴설정이 저장된적 있는지 확인
         $setting_menu_config = $this->config->get('setting_menus',false,$site_key);
+
         //현재 열린 라우팅 액션 미리 확인
         $action = array_get($current_route->action,'setting_menu');
+
+        //소유자 권한이 있으면 임시로 최고관리자 등급을 적용해주고,
+        //매니저 권한이 있으면 임시로 관리자 등급을 적용해준다.
+        //(어차피 페이지접근시에는 최고등급이 필요해서 최종적으로 최고관리자 등급을 적용받지만, 메뉴권한 체크를위해서 먼저 이걸적용받는다.)
+        if($allowOwner === true) $this->setSuperUser();
+        if($allowManager === true) $this->setManager();
 
         $getMenu = \XeRegister::get('settings/menu');
         ksort($getMenu);
@@ -124,6 +131,9 @@ class SetSiteGrantMiddlewareForSettingsRoute
         return auth()->user()->getRating() == 'super';
     }
 
+    private function setManager(){
+        auth()->user()->setAttribute('rating','manager');
+    }
     private function setSuperUser(){
         auth()->user()->setAttribute('rating','super');
     }
