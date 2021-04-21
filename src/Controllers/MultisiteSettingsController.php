@@ -285,8 +285,8 @@ class MultisiteSettingsController extends BaseController
             case 'menu' :
                 $getMenu = \XeRegister::get('settings/menu');
                 ksort($getMenu);
-
-                //메뉴 엑세스권한
+		
+		//메뉴 엑세스권한
                 $permission = $permissionHandler->get('multisite.menus',$site_key);
                 $translator = app('xe.translator');
                 $config = app('xe.config');

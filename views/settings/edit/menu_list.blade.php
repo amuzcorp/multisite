@@ -8,7 +8,7 @@
             </button>
         </div>
         <p class="sort-list__text">
-            <a data-toggle="tab" data-target="#{{ $menuItem['menuGroup'] }}Section" href="#{{ $menuItem['menuGroup'] }}Section" class="btn-link" style="color:#333;">
+            <a data-toggle="tab" data-target="#{{ array_get($menuItem,'menuGroup','undefined_menu_group') }}Section" href="#{{ $menuItem['menuGroup'] }}Section" class="btn-link" style="color:#333;">
                 {{ xe_trans($menuItem['title']) }} <small>(순서 : {{ $menuItem['ordering'] }})</small>
                 <i class="pull-right {{ $menuItem['is_off'] == "Y" ? 'xi-eye-off' : (($menuItem['display'] == false) ? 'xi-close-min' : 'xi-eye-o') }}"></i>
             </a>
