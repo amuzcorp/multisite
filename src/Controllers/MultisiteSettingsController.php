@@ -353,15 +353,14 @@ class MultisiteSettingsController extends BaseController
     public function updateSettingMenusConfig(Request $request,$site_key,$config_id)
     {
         $config = app('xe.config');
-        $itemConfig = $config->get($config_id,false,$site_key);
-        if($itemConfig == null)
+        $item_config = $config->getVal($config_id, null, true, $site_key);
+        if($item_config == null)
             return XePresenter::makeApi(['alert_type' => 'danger', 'message' => '잘못된 설정의 변경을 시도합니다.']);
 
         $item = $request->only('icon','is_off','ordering','description');
         $item['title_lang'] = $request->get('title');
-        foreach($item as $key => $val) $itemConfig[$key] = $val;
 
-        app('xe.config')->modify($itemConfig);
+        $config->setVal($config_id,$item,false,null,$site_key);
         return XePresenter::makeApi(['alert_type' => 'success', 'message' => '설정이 저장되었습니다.']);
     }
 
