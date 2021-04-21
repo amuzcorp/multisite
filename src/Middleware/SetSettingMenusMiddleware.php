@@ -37,6 +37,7 @@ class SetSettingMenusMiddleware
     private function registerSettingsMenus(){
         \XeRegister::push('settings/menu', 'sites', [
             'title' => '멀티사이트',
+            'icon' => 'xi-sitemap-o',
             'description' => '사이트를 생성하고 관리합니다.',
             'display' => true,
             'ordering' => 200
@@ -63,6 +64,7 @@ class SetSettingMenusMiddleware
     private function changeSettingsMenus(){
         \XeRegister::push('settings/menu', 'sitemap', [
             'title' => '사이트',
+            'icon' => 'xi-browser',
             'display' => true,
             'description' => 'xe::siteMapDescription',
             'ordering' => 2000
