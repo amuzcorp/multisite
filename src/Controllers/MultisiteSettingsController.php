@@ -285,6 +285,7 @@ class MultisiteSettingsController extends BaseController
             case 'menu' :
                 $getMenu = \XeRegister::get('settings/menu');
                 ksort($getMenu);
+
 		        //메뉴 엑세스권한
                 $permission = $permissionHandler->get('multisite.menus',$site_key);
                 $translator = app('xe.translator');
@@ -295,31 +296,31 @@ class MultisiteSettingsController extends BaseController
 
                 foreach ($getMenu as $id => $item) {
                     //if has config, replace $item
-                    $item_config = $config->getVal('setting_menus.'.$id,$item,false,$site_key);
+                    $item_config = $config->getVal('setting_menus.'.$id, $item, true, $site_key);
 
                     //플러그인에서 삭제한경우, is_off가 선언되지 않고 display만 false가 됨
-                    if(array_get($item_config,'display',false) == false && !isset($item_config['is_off'])){
+                    if(array_get($item,'display') === false && !isset($item_config['is_off'])){
                         unset($getMenu[$id]);
                         continue;
                     }
 
-                    $item_config['display'] = array_get($item,'display',false);
-                    $item_config['title'] = array_get($item,'title','Deleted by Plugin');
-                    $item_config['ordering'] = array_get($item,'ordering',9999);
-                    $item_config['icon'] = array_get($item,'icon','xi-bars');
-                    $item_config['is_off'] = array_get($item,'is_off','N');
+                    $item['display'] = isset($item_config['display']);
+                    $item['title'] = array_get($item_config,'title','Deleted by Plugin');
+                    $item['ordering'] = array_get($item_config,'ordering',9999);
+                    $item['icon'] = array_get($item_config,'icon','xi-bars');
+                    $item['is_off'] = array_get($item_config,'is_off','N');
 
                     if(!isset($item_config['title_lang'])){
                         $title_lang = $translator->genUserKey();
                         foreach ($translator->getLocales() as $locale) {
-                            $value = xe_trans($item_config['title'],[],$locale);
+                            $value = xe_trans($item['title'],[],$locale);
                             XeLang::save($title_lang, $locale, $value);
                         }
                         $item_config['title_lang'] = $title_lang;
                     }
 
                     //save for default options
-                    $config->setVal('setting_menus.'.$id,$item_config,false,null,$site_key);
+                    $config->setVal('setting_menus.'.$id,$item,false,null,$site_key);
 
                     $permission = $permissionHandler->get('multisite.menus.'.$id,$site_key);
                     if ($permission === null) $permission = $permissionHandler->register('multisite.menus.'.$id, new Grant(["access" => ["rating" => "manager","group" => [],"user" => [],"except" => []]]),$site_key);
@@ -332,8 +333,7 @@ class MultisiteSettingsController extends BaseController
 
                     $getMenu[$id] = $item;
                 }
-                $config->modify($setting_menu_config);
-
+//                $config->modify($setting_menu_config);
                 foreach (  $getMenu as  $key => $value ) {
                     $key = str_replace(".", ".child.", $key);
                     array_set($menus, $key, $value);

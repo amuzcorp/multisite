@@ -9,8 +9,8 @@
         </div>
         <p class="sort-list__text">
             <a data-toggle="tab" data-target="#{{ array_get($menuItem,'menuGroup','undefined_menu_group') }}Section" href="#{{ $menuItem['menuGroup'] }}Section" class="btn-link" style="color:#333;">
-                {{ xe_trans($menuItem['title']) }} <small>(순서 : {{ $menuItem['ordering'] }})</small>
-                <i class="pull-right {{ array_get($menuItem,'is_off',"N") == "Y" ? 'xi-eye-off' : (($menuItem['display'] == false) ? 'xi-close-min' : 'xi-eye-o') }}"></i>
+                {{ xe_trans($menuItem['title']) }} <small>(순서 : {{ array_get($menuItem,'ordering') }})</small>
+                <i class="pull-right {{ array_get($menuItem,'is_off',"N") == "Y" ? 'xi-eye-off' : ((array_get($menuItem,'display') == false) ? 'xi-close-min' : 'xi-eye-o') }}"></i>
             </a>
         </p>
     </div>
