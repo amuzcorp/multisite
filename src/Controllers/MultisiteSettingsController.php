@@ -300,7 +300,7 @@ class MultisiteSettingsController extends BaseController
 
                     //플러그인에서 삭제한경우, is_off가 선언되지 않고 display만 false가 됨
                     if(array_get($item,'display') === false && !isset($item_config['is_off'])){
-                        $config->setVal('setting_menus.'.$id,$item_config,false,null,$site_key);
+//                        $config->setVal('setting_menus.'.$id,$item_config,false,null,$site_key);
                         unset($getMenu[$id]);
                         continue;
                     }

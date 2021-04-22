@@ -1,8 +1,8 @@
-<div class="__xe_section_box tab-pane fade {{ $is_first ? 'active in':'' }}" id="{{ $menuItem['menuGroup'] }}Section">
+<div class="__xe_section_box tab-pane fade {{ $is_first ? 'active in':'' }}" id="{{ array_get($menuItem,'menuGroup','undefined_menu_group') }}Section">
     @php ($is_first = false)
     <div class="panel-heading">
         <div class="pull-left">
-            <h3 class="panel-title">{{xe_trans($menuItem['title']) }} 메뉴설정</h3>
+            <h3 class="panel-title">{{ xe_trans(array_get($menuItem,'title','deleted By Plugin') ) }} 메뉴설정</h3>
         </div>
     </div>
     <div class="panel-body">
