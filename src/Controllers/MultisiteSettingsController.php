@@ -213,7 +213,7 @@ class MultisiteSettingsController extends BaseController
                 [
                     "title" => "관리자 접근권한",
                     "id" => "multisite.manager",
-                    "default" => ["access" => ["rating" => "super","group" => [],"user" => [],"except" => []]],
+                    "default" => ["access" => ["rating" => "manager","group" => [],"user" => [],"except" => []]],
                 ]
             ]
         ];
