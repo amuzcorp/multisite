@@ -75,6 +75,7 @@ class SetSiteGrantMiddlewareForSettingsRoute
 
         $getMenu = \XeRegister::get('settings/menu');
         ksort($getMenu);
+
         foreach ($getMenu as $id => $item) {
             //소유자는 아이템 리플레이스만 함
             if($allowOwner == true && $setting_menu_config != null){
@@ -112,7 +113,7 @@ class SetSiteGrantMiddlewareForSettingsRoute
 
     private function replaceSettingMenuItem($id,$site_key){
         $item_config = $this->config->getVal('setting_menus.'.$id,null,true,$site_key);
-        if($item_config == null) return;
+        if($item_config == null || array_get($item_config , 'deleted_plugin', "N") === "Y") return;
 
         $item_config['display'] = array_get($item_config,'is_off','N') == "Y" ? false : true;
         $item_config['title'] = array_get($item_config,'title_lang',null) == null ? $item_config['title'] : $item_config['title_lang'];

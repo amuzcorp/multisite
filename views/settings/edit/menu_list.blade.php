@@ -8,9 +8,9 @@
             </button>
         </div>
         <p class="sort-list__text">
-            <a data-toggle="tab" data-target="#{{ array_get($menuItem,'menuGroup','undefined_menu_group') }}Section" href="#{{ $menuItem['menuGroup'] }}Section" class="btn-link" style="color:#333;">
+            <a data-toggle="tab" data-target="#{{ array_get($menuItem,'menuGroup','undefined_menu_group') }}Section" href="#{{ array_get($menuItem,'menuGroup','undefined_menu_group') }}Section" class="btn-link" style="color:#333;">
                 {{ xe_trans($menuItem['title']) }} <small>(순서 : {{ array_get($menuItem,'ordering') }})</small>
-                <i class="pull-right {{ array_get($menuItem,'is_off',"N") == "Y" ? 'xi-eye-off' : ((array_get($menuItem,'display') == false) ? 'xi-close-min' : 'xi-eye-o') }}"></i>
+                <i class="pull-right {{ array_get($menuItem,'delete_plugin',"N") == "Y" ? 'xi-close-min' : ((array_get($menuItem,'is_off',"N") == "Y") ? 'xi-eye-off' : 'xi-eye-o') }}"></i>
             </a>
         </p>
     </div>
