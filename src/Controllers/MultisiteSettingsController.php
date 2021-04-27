@@ -238,8 +238,9 @@ class MultisiteSettingsController extends BaseController
                 $output['domains'] = SiteDomain::where('site_key',$site_key)->orderBy('is_featured','DESC')->get();
                 $instances = InstanceRoute::where('site_key',$site_key)->get();
                 $output['menu_instances'] = [];
-                foreach($instances as $instance)
-                    $output['menu_instances'][$instance->instance_id] = $instance->MenuItem->getLinkAttribute();
+                foreach($instances as $instance){
+                    if($instance->MenuItem != null) $output['menu_instances'][$instance->instance_id] = $instance->MenuItem->getLinkAttribute();
+                }
 
                 if(\Request::get('target_domain')){
                     $output['domain'] = SiteDomain::find(\Request::get('target_domain'));
