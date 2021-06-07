@@ -6,6 +6,7 @@ use Route;
 use XeSkin;
 use View;
 use Xpressengine\Menu\AbstractModule;
+use Amuz\XePlugin\Multisite\Middleware\Cors;
 
 class SiteListModule extends AbstractModule
 {
@@ -27,8 +28,8 @@ class SiteListModule extends AbstractModule
     protected static function registerInstanceRoute()
     {
         Route::instance(self::getId(), function () {
-            Route::get('/', ['as' => 'index', 'uses' => 'MultisiteController@index']);
-            Route::get('/{site_key}', ['as' => 'show', 'uses' => 'MultisiteController@show']);
+            Route::get('/', ['as' => 'index', 'uses' => 'MultisiteController@index', 'middleware' => [Cors::class]]);
+            Route::get('/{site_key}', ['as' => 'show', 'uses' => 'MultisiteController@show', 'middleware' => [Cors::class]]);
         }, ['namespace' => 'Amuz\XePlugin\Multisite\Controllers']);
 
     }
