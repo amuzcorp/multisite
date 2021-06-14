@@ -52,18 +52,22 @@ class MultisiteController extends BaseController
             });
         }
         //set search keyword
-        $Sites = $collection->where(function($q) use ($keyword, $translations){
-            $q->whereHas('domains', function ($query) use ($keyword){
-                $query->where('domain','like','%'.$keyword.'%');
-            })->orWhereHas('configMeta', function($query) use ($keyword,$translations){
-                $toJson = str_replace('"','',json_enc($keyword,1,-1));
-                $escapeBackSlash = str_replace('\\','%',$toJson);
-                $query->where('vars','like','%'.$escapeBackSlash.'%');
-                foreach($translations as $key => $item){
-                    $query->orWhere('vars','like','%'.$item.'%');
-                }
-            });
-        })->paginate(40);
+        if($keyword !== null) {
+            $Sites = $collection->where(function ($q) use ($keyword, $translations) {
+                $q->whereHas('domains', function ($query) use ($keyword) {
+                    $query->where('domain', 'like', '%' . $keyword . '%');
+                })->orWhereHas('configMeta', function ($query) use ($keyword, $translations) {
+                    $toJson = str_replace('"', '', json_enc($keyword, 1, -1));
+                    $escapeBackSlash = str_replace('\\', '%', $toJson);
+                    $query->where('vars', 'like', '%' . $escapeBackSlash . '%');
+                    foreach ($translations as $key => $item) {
+                        $query->orWhere('vars', 'like', '%' . $item . '%');
+                    }
+                });
+            })->paginate(40);
+        }else{
+            $Sites = $collection->paginate(40);
+        }
 //        dd(\DB::getQueryLog()); // Show results of log
 
         // set browser title
