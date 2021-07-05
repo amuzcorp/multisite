@@ -890,7 +890,7 @@ class MultisiteSettingsController extends BaseController
             ]);
             //theme/together@together.0
             $plugin_name = substr($theme,strlen('theme/'),strpos($theme,"@") - strlen('theme/'));
-            if($plugin_name != "blankTheme") $theme_plugins[$plugin_name] = true;
+            if($plugin_name != "xpressengine") $theme_plugins[$plugin_name] = true;
         }
 
         /** @var ThemeHandler $themeHandler */
