@@ -71,7 +71,7 @@ class Plugin extends AbstractPlugin
     }
 
     public function setSiteDomainInfo(){
-        if(!Schema::hasTable('site_domains') || strpos(php_sapi_name(), 'cli')) return;
+        if(!Schema::hasTable('site_domains') || strpos(php_sapi_name(), 'cli') !== false) return;
 
         $request = request();
         $current_domain = $request->getHttpHost();
