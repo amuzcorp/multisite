@@ -53,12 +53,14 @@ class SitesMigration
             }
 
             //도메인 생성
+            $is_ssl = app('config')->get('xe.ssl.always') == true ? 'Y' : 'N';
+
             $defaultSite->Domains()->saveMany([
                 new SiteDomain([
-                    'domain' => $featured_domain, 'is_ssl' => "N",  'is_featured' => "Y"
+                    'domain' => $featured_domain, 'is_ssl' => $is_ssl,  'is_featured' => "Y"
                 ]),
                 new SiteDomain([
-                    'domain' => $alias_domain, 'is_ssl' => "N"
+                    'domain' => $alias_domain, 'is_ssl' => $is_ssl
                 ]),
             ]);
 
