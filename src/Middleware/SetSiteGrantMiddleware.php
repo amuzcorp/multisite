@@ -73,6 +73,9 @@ class SetSiteGrantMiddleware
         //액세스설정이 저장된적이 있으면
         if($allowAccess != null){
             if($allowAccess == false) throw new AuthorizationException(xe_trans('xe::accessDenied'));
+            //사용자단에서 관리권한을 쓸 일이 있을수있어서 권한 같이 설정함
+            if($allowManager) $this->setManager();
+            if($allowOwner) $this->setSuperUser();
         }
 
         //Lang Preprocessor를 실행시켜준다.
@@ -86,5 +89,12 @@ class SetSiteGrantMiddleware
 
     private function isSuper(){
         return auth()->user()->getRating() == 'super';
+    }
+
+    private function setManager(){
+        auth()->user()->setAttribute('rating','manager');
+    }
+    private function setSuperUser(){
+        auth()->user()->setAttribute('rating','super');
     }
 }
