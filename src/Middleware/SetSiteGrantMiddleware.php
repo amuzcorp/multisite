@@ -1,10 +1,12 @@
 <?php
 namespace Amuz\XePlugin\Multisite\Middleware;
+use App\Http\Middleware\LangPreprocessor;
 use Auth;
 use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Auth\Access\Gate as GateContract;
 use Illuminate\Contracts\Foundation\Application;
+use Xpressengine\Http\Request;
 use Xpressengine\Permission\Instance as PermissionInstance;
 
 class SetSiteGrantMiddleware
@@ -41,7 +43,7 @@ class SetSiteGrantMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request $request
      * @param  \Closure  $next
      * @return mixed
      */
@@ -73,7 +75,9 @@ class SetSiteGrantMiddleware
             if($allowAccess == false) throw new AuthorizationException(xe_trans('xe::accessDenied'));
         }
 
-        return $next($request);
+        //Lang Preprocessor를 실행시켜준다.
+        $langPreProcessor = new LangPreprocessor($this->app);
+        return $langPreProcessor->handle($request,$next);
     }
 
     private function isManager(){

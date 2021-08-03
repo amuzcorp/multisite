@@ -44,8 +44,9 @@ class Plugin extends AbstractPlugin
      */
     public function boot()
     {
+        $router = app('router');
         //관리자메뉴를 추가해줌.
-        app('router')->prependMiddlewareToGroup('web', SetSettingMenusMiddleware::class);
+        $router->prependMiddlewareToGroup('web', SetSettingMenusMiddleware::class);
         Site::observe(SiteObserver::class);
 
         $this->putLang(); //요건나중에 update로 옮길것
@@ -59,8 +60,13 @@ class Plugin extends AbstractPlugin
         $this->registerSitesSettingsRoute();
 
         //setMiddleWare
-        app('router')->pushMiddlewareToGroup('web', SetSiteGrantMiddleware::class);
-        app('router')->aliasMiddleware('settings', SetSiteGrantMiddlewareForSettingsRoute::class);
+        //LangPreProccessor이 권한 제어보다 먼저 선언되어서 발생하는 충돌을 방지
+        $web_middleware = $router->getMiddlewareGroups()['web'];
+        unset($web_middleware[array_search('App\Http\Middleware\LangPreprocessor',$web_middleware)]);
+
+        $router->middlewareGroup('web', $web_middleware);
+        $router->pushMiddlewareToGroup('web', SetSiteGrantMiddleware::class);
+        $router->aliasMiddleware('settings', SetSiteGrantMiddlewareForSettingsRoute::class);
     }
 
     public static function putLang()

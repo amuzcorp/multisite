@@ -1,7 +1,9 @@
 <?php
 namespace Amuz\XePlugin\Multisite\Middleware;
+use App\Http\Middleware\LangPreprocessor;
 use Auth;
 use Closure;
+use Xpressengine\Http\Request;
 use Xpressengine\Settings\SettingsMiddleware;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Auth\Access\Gate as GateContract;
@@ -42,7 +44,7 @@ class SetSiteGrantMiddlewareForSettingsRoute
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @param  \Closure  $next
      * @return mixed
      */
@@ -108,7 +110,12 @@ class SetSiteGrantMiddlewareForSettingsRoute
 
         //기존 순정XE 설정미들웨어를 실행시켜준다.
         $settingsMiddleware = new SettingsMiddleware($this->app, $this->gate);
-        return $settingsMiddleware->handle($request,$next);
+        $response = $settingsMiddleware->handle($request,$next);
+
+        //Lang Preprocessor를 실행시켜준다.
+        $langPreProcessor = new LangPreprocessor($this->app);
+        return $langPreProcessor->handle($request,$next);
+
     }
 
     private function replaceSettingMenuItem($id,$site_key){
