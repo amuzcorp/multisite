@@ -9,7 +9,7 @@
         "site"
     ],
     "license": "LGPL-3.0-or-later",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "type": "xpressengine-plugin",
     "support": {
         "email": "support.dev@amuz.co.kr"
@@ -55,7 +55,7 @@
         }
     },
     "require": {
-        "xpressengine/xpressengine": "~3.0.12"
+        "xpressengine/xpressengine": ">=3.0.13"
     },
     "autoload": {
         "psr-4": {
