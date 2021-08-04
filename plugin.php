@@ -63,7 +63,7 @@ class Plugin extends AbstractPlugin
         //LangPreProccessor이 권한 제어보다 먼저 선언되어서 발생하는 충돌을 방지
         $web_middleware = $router->getMiddlewareGroups()['web'];
         $setGrantMiddleWare = [SetSiteGrantMiddleware::class];
-        $web_middleware = array_splice($web_middleware, array_search('App\Http\Middleware\LangPreprocessor',$web_middleware), 0, $setGrantMiddleWare);
+        array_splice($web_middleware, array_search('App\Http\Middleware\RequiredDF',$web_middleware), 0, $setGrantMiddleWare);
 
         $router->middlewareGroup('web', $web_middleware);
         $router->aliasMiddleware('settings', SetSiteGrantMiddlewareForSettingsRoute::class);
