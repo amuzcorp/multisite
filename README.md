@@ -5,7 +5,6 @@ XE3를 하나의 구동환경에서 무제한 웹사이트로 확장할 수 있�
 
 ### Enviroment
 - [XpressEngine3](https://github.com/xpressengine/xpressengine "XE3 Git") 코어 3.0.13 이상이 필요합니다.
-- [멀티사이트 플러그인](https://github.com/amuzcorp/multisite "멀티사이트 Git 저장소") 을 지원합니다.
 
 # Features
 
